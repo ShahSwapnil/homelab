@@ -1,22 +1,68 @@
 #!/bin/bash
 
+# Check if at least one argument is provided
+if [ "$#" -eq 0 ]; then
+  echo "Error: No argument provided." >&2
+  echo "Usage: $0 -n <CertificateCommonName>" >&2 # $0 is the script's name
+  exit 1 # Exit with a non-zero status to indicate an error
+fi
+
+# If we reach here, an argument was passed
+PASSED_ARG="$1"
+echo "Argument received: $PASSED_ARG"
+
+while getopts "n:" opt; do
+	case $opt in 
+		n)
+			NAME="$OPTARG"
+			;;
+		:)
+			echo "Options -$OPTARG requires an argument." >&2
+			exit 1
+			;;
+		*) # Fallback for unexpected argument (shouldn't happen with getopt unless -- is missing)
+		echo "Internal error: unrecognized option '$1'" >&2
+		exit 1
+		;;
+	esac
+done
+
+# Shift off the options so that remaining arguments (if any) are
+# accessible starting from $1
+shift $((OPTIND - 1))
+
+echo "Name: $NAME"
+
 PROJECT_PATH="/workspaces/homelab"
 CERTIFICATE_FOLDER_PATH="$PROJECT_PATH/certs"
-
 ROOT_CA_FOLDER_PATH="$CERTIFICATE_FOLDER_PATH/root/ca"
-ROOT_CERTS_FOLDER_PATH="$ROOT_CA_FOLDER_PATH/certs"
-ROOT_CRL_FOLDER_PATH="$ROOT_CA_FOLDER_PATH/crl"
-ROOT_NEWCERTS_FOLDER_PATH="$ROOT_CA_FOLDER_PATH/newcerts"
+
 ROOT_PRIVATE_FOLDER_PATH="$ROOT_CA_FOLDER_PATH/private"
+ROOT_CA_KEY_FILE_PATH="$ROOT_PRIVATE_FOLDER_PATH/ca.key.pem"
+
+ROOT_CERTS_FOLDER_PATH="$ROOT_CA_FOLDER_PATH/certs"
+ROOT_CA_FILE_PATH="$ROOT_CERTS_FOLDER_PATH/ca.cert.pem"
+ROOT_OPENSSL_CONF="$ROOT_CA_FOLDER_PATH/openssl.conf"
+
+INTERMEDIATE_CA_FOLDER_PATH="$CERTIFICATE_FOLDER_PATH/root/ca/$NAME"
+INTERMEDIATE_CERTS_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/certs"
+INTERMEDIATE_CRL_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/crl"
+INTERMEDIATE_NEWCERTS_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/newcerts"
+INTERMEDIATE_PRIVATE_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/private"
+INTERMEDIATE_CSR_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/csr"
+
+INTERMEDIATE_CRL_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/crl"
+INTERMEDIATE_NEWCERTS_FOLDER_PATH="$INTERMEDIATE_CA_FOLDER_PATH/newcerts"
 REQUIRED_PERMS="700"
 
-INDEX_FILE_PATH="$ROOT_CA_FOLDER_PATH/index.txt"
-SERIAL_FILE_PATH="$ROOT_CA_FOLDER_PATH/serial"
-OPENSSL_CONF="$ROOT_CA_FOLDER_PATH/openssl.conf"
+INDEX_FILE_PATH="$INTERMEDIATE_CA_FOLDER_PATH/index.txt"
+SERIAL_FILE_PATH="$INTERMEDIATE_CA_FOLDER_PATH/serial"
+CRLNUMBER_FILE_PATH="$INTERMEDIATE_CA_FOLDER_PATH/crlnumber"
+OPENSSL_CONF="$INTERMEDIATE_CA_FOLDER_PATH/openssl.conf"
 
-ROOT_CA_KEY_FILE_PATH="$ROOT_PRIVATE_FOLDER_PATH/ca.key.pem"
-ROOT_CA_FILE_PATH="$ROOT_CERTS_FOLDER_PATH/ca.cert.pem"
-ROOT_CA_PFX_FILE_PATH="$ROOT_CERTS_FOLDER_PATH/NSCubedRootCACertificate.pfx"
+INTERMEDIATE_CA_KEY_FILE_PATH="$INTERMEDIATE_PRIVATE_FOLDER_PATH/$NAME.key.pem"
+INTERMEDIATE_CA_FILE_PATH="$INTERMEDIATE_CERTS_FOLDER_PATH/$NAME.cert.pem"
+INTERMEDIATE_CSR_FILE_PATH="$INTERMEDIATE_CSR_FOLDER_PATH/$NAME.csr.pem"
 
 echo_message() {
 	local message="$1"
@@ -57,7 +103,6 @@ create_directory() {
 
 create_openssl_conf() {
 	local confFilePath="$1"
-	local rootPath="$2"
 
 	cat <<EOF > "$confFilePath"
 [ ca ]
@@ -66,21 +111,21 @@ default_ca = CA_default
 
 [ CA_default ]
 # Directory and file locations.
-dir               = $rootPath
-certs             = $dir/certs
-crl_dir           = $dir/crl
-new_certs_dir     = $dir/newcerts
-database          = $dir/index.txt
-serial            = $dir/serial
-RANDFILE          = $dir/private/.rand
+dir               = $INTERMEDIATE_CA_FOLDER_PATH
+certs             = $INTERMEDIATE_CERTS_FOLDER_PATH
+crl_dir           = $INTERMEDIATE_CRL_FOLDER_PATH
+new_certs_dir     = $INTERMEDIATE_NEWCERTS_FOLDER_PATH
+database          = $INDEX_FILE_PATH
+serial            = $SERIAL_FILE_PATH
+RANDFILE          = $INTERMEDIATE_PRIVATE_FOLDER_PATH/.rand
 
 # The root key and root certificate.
-private_key       = $dir/private/ca.key.pem
-certificate       = $dir/certs/ca.cert.pem
+private_key       = $INTERMEDIATE_CA_KEY_FILE_PATH
+certificate       = $INTERMEDIATE_CA_FILE_PATH
 
 # For certificate revocation lists.
-crlnumber         = $dir/crlnumber
-crl               = $dir/crl/ca.crl.pem
+crlnumber         = $CRLNUMBER_FILE_PATH
+crl               = $INTERMEDIATE_CRL_FOLDER_PATH/crl/$NAME.crl.pem
 crl_extensions    = crl_ext
 default_crl_days  = 30
 
@@ -91,7 +136,7 @@ name_opt          = ca_default
 cert_opt          = ca_default
 default_days      = 375
 preserve          = no
-policy            = policy_strict
+policy            = policy_loose
 
 [ policy_strict ]
 # The root CA should only sign intermediate certificates that match.
@@ -141,7 +186,7 @@ countryName_default             = US
 stateOrProvinceName_default     = Michigan
 localityName_default            = Macomb
 0.organizationName_default      = NSCubed
-organizationalUnitName_default  = NSCubed Root Certificate Authority
+organizationalUnitName_default  = NSCubed Certificate Authority
 emailAddress_default            = admin@nscubed.com
 
 [ v3_ca ]
@@ -195,19 +240,20 @@ EOF
 echo_message "Starting Script" 
 
 echo_message "Creating Directories"
-create_directory $ROOT_CA_FOLDER_PATH
-create_directory $ROOT_CERTS_FOLDER_PATH
-create_directory $ROOT_CRL_FOLDER_PATH
-create_directory $ROOT_NEWCERTS_FOLDER_PATH
-create_directory $ROOT_PRIVATE_FOLDER_PATH
+create_directory $INTERMEDIATE_CA_FOLDER_PATH
+create_directory $INTERMEDIATE_CERTS_FOLDER_PATH
+create_directory $INTERMEDIATE_CRL_FOLDER_PATH
+create_directory $INTERMEDIATE_NEWCERTS_FOLDER_PATH
+create_directory $INTERMEDIATE_PRIVATE_FOLDER_PATH
+create_directory $INTERMEDIATE_CSR_FOLDER_PATH
 echo_message "Directories created"
 
 echo_message "Setting Permissions"
-CURRENT_PERMS=$(stat -c "%a" "$ROOT_PRIVATE_FOLDER_PATH")
+CURRENT_PERMS=$(stat -c "%a" "$INTERMEDIATE_PRIVATE_FOLDER_PATH")
 if [ "$CURRENT_PERMS" -eq "$REQUIRED_PERMS" ]; then
 	echo_message "Permissions already set." warn
 else
-	chmod 700 $ROOT_PRIVATE_FOLDER_PATH
+	chmod 700 $INTERMEDIATE_PRIVATE_FOLDER_PATH
 	echo_message "Permissions set" success
 fi
 
@@ -227,44 +273,56 @@ else
 	echo_message "Index File '$SERIAL_FILE_PATH' created" success
 fi
 
+echo_message "Create CRL Number file"
+if [ -e "$CRLNUMBER_FILE_PATH" ]; then
+	echo_message "File '$CRLNUMBER_FILE_PATH' already exists." warn
+else
+	echo 1000 > $CRLNUMBER_FILE_PATH
+	echo_message "CRLNUMBER File '$CRLNUMBER_FILE_PATH' created" success
+fi
+
 echo_message "OpenSSL Configuration File"
 if [ -e "$OPENSSL_CONF" ]; then
 	echo_message "File '$OPENSSL_CONF' already exists." warn
 else
-	create_openssl_conf "$OPENSSL_CONF" "$ROOT_CA_FOLDER_PATH"
+	create_openssl_conf "$OPENSSL_CONF" "$INTERMEDIATE_CA_FOLDER_PATH"
 	echo_message "OpenSSL Configuration '$OPENSSL_CONF' created" success
 fi
-echo_message "Create Root CA Key"
-if [ -e "$ROOT_CA_KEY_FILE_PATH" ]; then
-	echo_message "Root CA Key already exists" 
-	echo_message "Skipping Root CA Key creation" warn
+
+echo_message "Create $NAME CA Key"
+if [ -e "$INTERMEDIATE_CA_KEY_FILE_PATH" ]; then
+	echo_message "$NAME CA Key already exists" 
+	echo_message "Skipping $NAME CA Key creation" warn
 else
 	echo_message "Enter passphrase when prompted"
-	openssl genrsa -aes256 -out $ROOT_CA_KEY_FILE_PATH 4096
-	chmod 400 $ROOT_CA_KEY_FILE_PATH
+	openssl genrsa -aes256 -out $INTERMEDIATE_CA_KEY_FILE_PATH 4096
+	chmod 400 $INTERMEDIATE_CA_KEY_FILE_PATH
 	echo_message "Key Created and Permissions set" success
 fi
 
-echo_message "Create Root Certificate"
-if [ -e "$ROOT_CA_FILE_PATH" ]; then
-	echo_message "Root CA already exists"
-	echo_message "Skipping Root CA Creation" warn
+echo_message "Certificate Signing Request (CSR)"
+if [ -e "$INTERMEDIATE_CSR_FILE_PATH" ]; then
+	echo_message "$NAME CSR already exists" 
+	echo_message "Skipping $NAME CSR creation" warn
 else
-	echo_message "Enter Information when prompted"
-	openssl req -config $OPENSSL_CONF -key $ROOT_CA_KEY_FILE_PATH -new -x509 -days 7300 -sha256 -extensions v3_ca -out $ROOT_CA_FILE_PATH
-	chmod 444 $ROOT_CA_FILE_PATH
-	echo_message "Cert Created and Permissions set" success
+	echo_message "Enter passphrase when prompted"
+	openssl req -config $OPENSSL_CONF -new -sha256 -key $INTERMEDIATE_CA_KEY_FILE_PATH -out $INTERMEDIATE_CSR_FILE_PATH
+	echo_message "'$INTERMEDIATE_CSR_FILE_PATH' CSR created." success
 fi
 
-echo_message "Verify Root Certificate"
-openssl x509 -noout -text -in $ROOT_CA_FILE_PATH
-
-echo_message "PFX Certificate"
-if [ -e "$ROOT_CA_PFX_FILE_PATH" ]; then
-	echo_message "Root CA PFX already exists"
-	echo_message "Skipping Root CA PFX Creation" warn
+echo_message "Create $NAME certificate"
+if [ -e "$INTERMEDIATE_CA_FILE_PATH" ]; then
+	echo_message "$NAME Cert already exists" 
+	echo_message "Skipping $NAME Cert creation" warn
 else
-	openssl pkcs12 -export -out $ROOT_CA_PFX_FILE_PATH -inkey $ROOT_CA_KEY_FILE_PATH -in $ROOT_CA_FILE_PATH
-	echo_message "PFX Cert created" success
+	echo_message "Enter passphrase when prompted"
+	openssl ca -config $ROOT_OPENSSL_CONF -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -in $INTERMEDIATE_CSR_FILE_PATH -out $INTERMEDIATE_CA_FILE_PATH
+	chmod 444 $INTERMEDIATE_CA_FILE_PATH
+	echo_message "'$INTERMEDIATE_CA_FILE_PATH' Certificate created." success
 fi
 
+echo_message "Verify $NAME Certificate"
+openssl x509 -noout -text -in $INTERMEDIATE_CA_FILE_PATH
+
+echo_message "Verify $NAME Certificate against Root CA"
+openssl verify -CAfile $ROOT_CA_FILE_PATH $INTERMEDIATE_CA_FILE_PATH
