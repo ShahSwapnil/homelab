@@ -26,3 +26,14 @@ That sounds like a fantastic idea, where to start? Let's start with a mindmap an
 
 - [x] Create PKI for HomeLab
   Kubernetes has [Public Key Infrastructure (PKI)](https://kubernetes.io/docs/setup/best-practices/certificates/) and I want to be able to use https in my HomeLab. So I need to dig into how to create a Certificate Authority (CA). I want to create a Root Certificate Authority which I will install on all of our devices and intermediate certificates that are signed using the Root CA can validated and we will not see the error that certificate cannot be trusted.
+- [ ] Create Automation to Provision Virtual Machines using Hyper-V. Shell to Powershell
+- [ ] Create Scripts to Setup VM
+  - [ ] SSH
+  - [ ] Nano
+  - [ ] Integration Tools
+  - [ ] Containerd
+  - [ ] runc
+  - [ ] CNI
+  - [ ] Kubeadm
+  - [ ] Cilium Install
+  - [ ] Cert Manager
