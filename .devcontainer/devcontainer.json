@@ -4,6 +4,9 @@
 	"name": "Markdown Editing",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
+	"mounts": [
+		"source=/home/certs,target=/workspaces/homelab/certs,type=bind,consistency=cached"
+	],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -38,7 +41,8 @@
 		"ghcr.io/devcontainers-extra/features/powershell:1": {
 			"version": "latest"
 		}
-	}
+	},
+	"updateRemoteUserUID": true
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -48,4 +52,5 @@
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
+
 }
