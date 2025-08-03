@@ -24,4 +24,5 @@ That sounds like a fantastic idea, where to start? Let's start with a mindmap an
 
 ## Next Steps
 
-Kubernetes has [Public Key Infrastructure (PKI)](https://kubernetes.io/docs/setup/best-practices/certificates/) and I want to be able to use https in my HomeLab. So I need to dig into how to create a Certificate Authority (CA). I want to create a Root Certificate Authority which I will install on all of our devices and intermediate certificates that are signed using the Root CA will be validated and we will not see the error that certificate cannot be trusted.
+- [x] Create PKI for HomeLab
+  Kubernetes has [Public Key Infrastructure (PKI)](https://kubernetes.io/docs/setup/best-practices/certificates/) and I want to be able to use https in my HomeLab. So I need to dig into how to create a Certificate Authority (CA). I want to create a Root Certificate Authority which I will install on all of our devices and intermediate certificates that are signed using the Root CA can validated and we will not see the error that certificate cannot be trusted.
