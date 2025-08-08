@@ -1,5 +1,6 @@
 {
 	"cSpell.words": [
+		"-",
 		"agnoster",
 		"Anson",
 		"bierner",
@@ -7,10 +8,20 @@
 		"CRLNUMBER",
 		"devcontainers",
 		"geistmann",
+		"getopt",
 		"homelab",
 		"Kubeadm",
+		"kubernetesca",
+		"longoptions",
 		"mindmap",
 		"NEWCERTS",
+		"NOPASSWD",
+		"Passthru",
+		"pwsh",
+		"swapn",
+		"UEFI",
+		"VHDX",
+		"VMNAME",
 		"yzhang"
 	]
 }
