@@ -24,7 +24,15 @@ How to leverage the shell scripts to provision VMs using Hyper-V and configure e
         echo "neil ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/neil
         ```
 
-3. Initialize the VM
+3. Setup SSH
+
+    ```bash
+      ./setupSSH.sh -i "192.168.1.68"
+      ./setupSSH.sh -i "192.168.1.69"
+      ./setupSSH.sh -i "192.168.1.71"
+    ```
+
+4. Initialize the VM
    Setup Cluster shell script will
    1. Update Packages (apt / apt-get)
    2. Install Nano (text editor)

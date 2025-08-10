@@ -122,7 +122,7 @@ PS_SCRIPT_PARAMS="-VMName \"$VMNAME\" -MacAddress \"$MacAddress\" -ProcessorCoun
 # --- Error Handling Function ---
 handle_error() {
   echo "Error on line $1: $2" >&2
-  exit 1
+  #exit 1
 }
 
 # Trap errors to call handle_error

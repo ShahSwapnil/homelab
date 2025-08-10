@@ -127,8 +127,15 @@ else
   echo "No line containing 'swap' found in /etc/fstab. No action needed."
 fi
 
-echo "Apply sysctl Parameters"
-sudo sysctl --system
+
+if [ ! -f "/etc/sysctl.d/k8s.conf" ]; then
+cat <<EOFA | sudo tee /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+EOFA
+
+	echo "Apply sysctl Parameters"
+	sudo sysctl --system
+fi
 
 if [ ! -f "/usr/local/bin/containerd" ]; then
 	echo "Unzip Containerd Release"
