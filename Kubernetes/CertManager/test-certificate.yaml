@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-cert
+  namespace: default # Or the namespace where you'll run your test app
+spec:
+  secretName: test-tls-secret # Cert-manager will store the signed cert and key here
+  dnsNames:
+  - test.nscubed.lan # Replace with your hostname
+  issuerRef:
+    name: nscubed-cluster-issuer # The name of your ClusterIssuer
+    kind: ClusterIssuer # This must be specified as ClusterIssuer

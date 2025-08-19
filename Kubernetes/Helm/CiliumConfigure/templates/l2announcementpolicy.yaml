@@ -1,0 +1,14 @@
+---
+{{ if .Values.l2AnnouncementPolicy.enabled }}
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: {{ .Values.l2AnnouncementPolicy.name }}
+spec:
+  serviceSelector: {}
+  nodeSelector: {}
+  interfaces:
+  - ^eth[0-9]+
+  externalIPs: {{ .Values.l2AnnouncementPolicy.externalIPs }}
+  loadBalancerIPs: {{ .Values.l2AnnouncementPolicy.loadBalancerIPs }}
+{{ end }}

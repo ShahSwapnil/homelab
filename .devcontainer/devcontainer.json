@@ -6,7 +6,7 @@
 	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
 	"mounts": [
 		"source=/home/certs,target=/workspaces/homelab/certs,type=bind,consistency=cached",
-		"source-/home/.kube,target=/home/.kube,type=bind,consistency=cached"
+		"source=/home/neil/.kube,target=/home/vscode/.kube,type=bind,consistency=cached"
 	],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

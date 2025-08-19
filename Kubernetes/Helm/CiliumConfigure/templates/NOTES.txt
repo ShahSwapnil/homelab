@@ -1,0 +1,2 @@
+1. IP Pool is enabled: {{ .Values.ipPool.enabled }}
+2. L2AnnouncementPolicy is enabled: {{ .Values.l2AnnouncementPolicy.enabled }}

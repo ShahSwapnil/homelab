@@ -1,0 +1,12 @@
+ipPool:
+  enabled: true
+  name: "nscubed-ip-pool"
+  blocks:
+    - "192.168.1.80/28" # Covers .80 to .95
+    - "192.168.1.96/29" # Covers .96 to .103
+
+l2AnnouncementPolicy:
+  enabled: true
+  name: "nscubed-l2-announcement-policy"
+  externalIPs: true
+  loadBalancerIPs: true
