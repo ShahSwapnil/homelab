@@ -67,6 +67,8 @@ if [ !-d "/media/setup" ]; then
 	sudo chown -R neil:neil /media/setup
 fi
 
+sudo apt-get install wireguard -y
+
 echo "Rebooting VM"
 sudo reboot
 EOF

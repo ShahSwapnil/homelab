@@ -8,35 +8,48 @@ Overview of the features enabled in Cilium.
 
 ## Helm Command
 
-Enables KubeProxyReplacement and allows all nodes to get to a ready state including control plane.
+Install Cilium Gateway API CRDs before install cilium Helm chart
+
+The Helm chart enables the following options:
+
+- Enables KubeProxyReplacement and allows all nodes to get to a ready state including control plane.
+- Layer 2 Announcements make services visible and reachable on the local area network (LAN).
+- Setup Gateway API
+- Enable Hubble relay and UI
+- WireGuard and Node-to-Node encryption
+-
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
+```
 
 ```bash
 helm install cilium cilium/cilium --version 1.18.0 \
     --namespace kube-system \
-    --set kubeProxyReplacement=true \
-    --set k8sServiceHost=192.168.1.68 \
-    --set k8sServicePort=6443
-```
-
-Layer 2 Announcements make services visible and reachable on the local area network (LAN).
-
-```bash
-helm upgrade cilium cilium/cilium --version 1.18.0 \
-    --namespace kube-system \
-    --reuse-values \
     --set l2announcements.enabled=true \
     --set k8sClientRateLimit.qps=33 \
     --set k8sClientRateLimit.burst=45 \
     --set kubeProxyReplacement=true \
     --set k8sServiceHost=192.168.1.68 \
     --set k8sServicePort=6443 \
-    --set gatewayAPI.enabled=true
+    --set gatewayAPI.enabled=true \
+    --set encryption.enabled=true \
+    --set encryption.type=wireguard \
+    --set encryption.nodeEncryption=true \
+    --set hubble.relay.enabled=true \
+    --set hubble.ui.enabled=true
 ```
 
 The DaemonSet for Cilium needs to be restarted so the new values will be applied.
 
 ```bash
-  kubectl rollout restart ds/cilium -n kube-system
+kubectl -n kube-system rollout restart deployment/cilium-operator
+kubectl -n kube-system rollout restart ds/cilium
 ```
 
 Apply the manifest in `/Kubernetes/Helm/Manifests/nginx-test.yaml
@@ -71,38 +84,3 @@ Now, re-run the kubectl command get to services.
 
 This time `nginx-test-service` has an external IP! Open up a web browser and navigate to the IP address.
 
-Now let's enable Hubble. Hubble provides Observability into our cluster. We will setup LGTM stack later but for now, we still need observability into our cluster/nodes.
-
-```bash
-helm upgrade cilium cilium/cilium --version 1.18.0 \
-   --namespace kube-system \
-   --reuse-values \
-   --set hubble.relay.enabled=true \
-   --set hubble.ui.enabled=true
-```
-
-setup Gateway API Support
-
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_gatewayclasses.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_gateways.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_httproutes.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_referencegrants.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.2.0/config/crd/experimental/gateway.networking.k8s.io_tlsroutes.yaml
-```
-
-```bash
-helm upgrade cilium cilium/cilium --version 1.18.1 \
-    --namespace kube-system \
-    --reuse-values \
-    --set gatewayAPI.enabled=true
-```
-
-```bash
-kubectl -n kube-system rollout restart deployment/cilium-operator
-```
-
-```bash
-kubectl -n kube-system rollout restart ds/cilium
-```
