@@ -83,4 +83,3 @@ Install the Helm chart `ConfigureCilium`
 Now, re-run the kubectl command get to services.
 
 This time `nginx-test-service` has an external IP! Open up a web browser and navigate to the IP address.
-
