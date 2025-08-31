@@ -1,0 +1,5 @@
+admissionWebhooks:
+  certManager:    
+    issuerRef:
+      name: nscubed-cluster-issuer # The name of your ClusterIssuer
+      kind: ClusterIssuer # This must be specified as ClusterIssuer

@@ -1,0 +1,35 @@
+global:
+  grafana:
+    enabled: true
+
+namespace: grafana 
+
+grafana:
+  server:
+    root_url: https://grafana.nscubed.lan
+  persistence:
+    enabled: true
+  sidecar:
+    datasources:
+      enabled: true
+
+datasources:
+  - name: loki
+    uid: loki
+    type: loki
+    access: proxy
+    basicAuth: false
+    url: http://loki-gateway.loki.svc.cluster.local/
+    editable: false
+    isDefault: true
+
+httpRoute:
+  enabled: true
+  hostNames:
+    - grafana.nscubed.lan
+  parentRefs:
+    name: http-gateway
+    namespace: kube-system
+  backendRefs:
+    - name: grafana
+      port: 80

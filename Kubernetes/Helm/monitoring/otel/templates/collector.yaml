@@ -1,0 +1,30 @@
+{{- range $key, $value := .Values.collectors }}
+  {{- range $value }}
+{{- if .enabled }}
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: {{ .name }}
+  namespace: otel
+  labels:
+    collectorType: {{ $key }}
+spec:
+  managementState: managed
+  mode: {{ .mode }}
+  config:
+    receivers: 
+      {{- .receivers | toYaml | nindent 6 }}    
+    processors: {}
+    exporters: 
+      {{- .exporters | toYaml | nindent 6 }}
+
+    service:
+      pipelines:
+        logs: 
+          receivers: [{{- .logs.pipeline.receivers | join "," -}}]
+          processors: [{{- .logs.pipeline.processors | join "," -}}]
+          exporters: [{{- .logs.pipeline.exporters | join "," -}}]
+{{- end }}
+{{- end }}
+{{- end }}

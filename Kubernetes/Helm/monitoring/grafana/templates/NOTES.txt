@@ -1,0 +1,4 @@
+1. Get your `{{ .Values.grafana.adminUser }}` user password by running: 
+
+kubectl get secret --namespace {{ include "grafana.namespace" . }} {{ .Values.grafana.admin.existingSecret | default (include "grafana.fullname" .) }} -o jsonpath="{.data.{{ .Values.grafana.admin.passwordKey | default "admin-password" }}}" | base64 --decode ; echo
+

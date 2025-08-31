@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nscubed-grafana-datasource
+  namespace: {{ .Values.namespace }}
+{{- if .Values.grafana.sidecar.datasources.annotations }}
+  annotations:
+    {{- toYaml .Values.grafana.sidecar.datasources.annotations | nindent 4 }}
+{{- end }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ template "grafana.chartref" . }}
+    app.kubernetes.io/part-of: {{ template "grafana.name" . }}
+    chart: {{ template "grafana.chartref" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+    grafana_datasource: "1"
+data:
+  datasource.yaml: |
+    apiVersion: 1
+    datasources:
+    {{- range .Values.datasources }}
+      - name: {{ .name }}
+        type: {{ .type }}
+        access: {{ .access }}
+        orgId: {{ .orgId | default 1 }}
+        uid: {{ .uid }}
+        url: {{ .url }}
+        basicAuth: {{ .basicAuth }}
+        editable: {{ .editable | default false }}
+    {{- end }}

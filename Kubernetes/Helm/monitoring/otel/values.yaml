@@ -1,0 +1,32 @@
+collectors:
+  daemonSet:
+    - name: otel-ds
+      enabled: true
+      mode: daemonset
+      receivers:
+        filelog:
+          exclude: []
+          include:
+          - /var/log/pods/*/*/*.log
+          include_file_name: false
+          include_file_path: true
+          operators:
+          - id: container-parser
+            max_log_size: 102400
+            type: container
+          retry_on_failure:
+            enabled: true
+          start_at: end
+      exporters:
+        debug:
+          verbosity: detailed
+
+      logs:
+        pipeline:
+          receivers:
+            - filelog
+          exporters:
+            - debug
+  deployment:
+    - name: otel-deployment
+      enabled: false

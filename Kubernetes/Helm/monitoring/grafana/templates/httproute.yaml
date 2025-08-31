@@ -1,0 +1,22 @@
+---
+{{- if .Values.httpRoute.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "httpRoute.name" . }}
+  namespace: {{ .Values.namespace }} # The namespace where your application service is located
+spec:
+  parentRefs:
+  - name: {{ .Values.httpRoute.parentRefs.name }}
+    namespace: {{ .Values.httpRoute.parentRefs.namespace }} # The namespace where your Gateway is located
+  hostnames:
+  {{- range .Values.httpRoute.hostNames }}
+  - {{ . | quote }}
+  {{- end}}
+  rules:
+  - backendRefs:
+  {{- range .Values.httpRoute.backendRefs }}
+    - name: {{ .name }}
+      port: {{ .port }}
+  {{- end }}
+{{- end }}
