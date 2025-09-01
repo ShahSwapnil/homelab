@@ -1,32 +1,317 @@
+namespace: otel
+
 collectors:
   daemonSet:
     - name: otel-ds
       enabled: true
+      managementState: managed
       mode: daemonset
-      receivers:
-        filelog:
-          exclude: []
-          include:
-          - /var/log/pods/*/*/*.log
-          include_file_name: false
-          include_file_path: true
-          operators:
-          - id: container-parser
-            max_log_size: 102400
-            type: container
-          retry_on_failure:
-            enabled: true
-          start_at: end
-      exporters:
-        debug:
-          verbosity: detailed
+      serviceAccount: ""
 
-      logs:
-        pipeline:
-          receivers:
-            - filelog
-          exporters:
-            - debug
+      annotations: {}
+
+      labels: {}
+
+      # Configuration for cluster role binding
+      clusterRoleBinding:
+        enabled: true
+        clusterRoleName: ""
+
+      # Image details for the collector
+      image:
+        # If you want to use the core image `otel/opentelemetry-collector`, you also need to change `command.name` value to `otelcol`.
+        repository: otel/opentelemetry-collector-k8s
+        pullPolicy: IfNotPresent
+        # By default, the version set for the collector will match the version of the operator being run.
+        tag: ""
+        # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
+        digest: ""
+
+      # Upgrade strategy for the collector
+      upgradeStrategy: automatic
+
+      # Configuration options for the collector
+      config: {}
+      # receivers:
+      #   otlp:
+      #     protocols:
+      #       grpc:
+      #         endpoint: ${env:MY_POD_IP}:4317
+      #       http:
+      #         endpoint: ${env:MY_POD_IP}:4318
+      # exporters:
+      #   otlp:
+      #     endpoint: "otel-collector.default:4317"
+      #     tls:
+      #       insecure: true
+      #     sending_queue:
+      #       num_consumers: 4
+      #       queue_size: 100
+      #     retry_on_failure:
+      #       enabled: true
+      # processors:
+      #   batch:
+      #   memory_limiter:
+      #     # 80% of maximum memory up to 2G
+      #     limit_mib: 400
+      #     # 25% of limit up to 2G
+      #     spike_limit_mib: 100
+      #     check_interval: 5s
+      # extensions:
+      #   zpages: {}
+      # service:
+      #   extensions: [zpages]
+      #   pipelines:
+      #     traces:
+      #       receivers: [otlp]
+      #       processors: [memory_limiter, batch]
+      #       exporters: [otlp]
+
+      # Whether to use host network for the collector
+      hostNetwork: false
+
+      # Whether to share process namespace for the collector
+      shareProcessNamespace: false
+
+      # Priority class name for the collector
+      priorityClassName: ""
+
+      # Termination grace period for the collector
+      terminationGracePeriodSeconds: 30
+
+      # Resource requests and limits for the collector
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "250m"
+
+      # Node selector for the collector
+      nodeSelector: {}
+      #   nodeType: worker
+
+      # Arguments for the collector
+      args: {}
+      #   arg1: value1
+      #   arg2: value2
+
+      # Autoscaler configuration for the collector
+      autoscaler: {}
+      #   minReplicas: 1
+      #   maxReplicas: 10
+      #   targetCPUUtilization: 50
+
+      # Pod disruption budget for the collector
+      podDisruptionBudget: {}
+      #   maxUnavailable: 1
+
+      # Security context for the collector
+      securityContext: {}
+      #   runAsUser: 1000
+      #   capabilities:
+      #     drop:
+      #       - ALL
+
+      # Pod security context for the collector
+      podSecurityContext: {}
+      #   runAsUser: 1000
+
+      # Annotations for the collector's pods
+      podAnnotations: {}
+      #   prometheus.io/scrape: "true"
+
+      # Target allocator configuration
+      targetAllocator: {}
+      # replicas: 1
+      # nodeSelector:
+      #   nodeType: worker
+      # resources:
+      #   requests:
+      #     memory: "64Mi"
+      #     cpu: "250m"
+      #   limits:
+      #     memory: "128Mi"
+      #     cpu: "500m"
+      # allocationStrategy: consistent-hashing
+      # filterStrategy: relabel-config
+      # serviceAccount: my-service-account
+      # image: myregistry/myimage:latest
+      # enabled: true
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: kubernetes.io/e2e-az-name
+      #               operator: In
+      #               values:
+      #                 - e2e-az1
+      #                 - e2e-az2
+      # # Configuration for Prometheus Custom Resources
+      # prometheusCR:
+      #   enabled: true
+      #   scrapeInterval: 30s
+      #   podMonitorSelector:
+      #     key1: value1
+      #     key2: value2
+      #   serviceMonitorSelector:
+      #     key1: value1
+      #     key2: value2
+      #   probeSelector:
+      #     key1: value1
+      #     key2: value2
+      #   scrapeConfigSelector:
+      #     key1: value1
+      #     key2: value2
+      # securityContext:
+      #   runAsUser: 1000
+      #   capabilities:
+      #     drop:
+      #       - ALL
+      # podSecurityContext:
+      #   runAsUser: 1000
+      # # Topology spread constraints for the target allocator
+      # topologySpreadConstraints:
+      #   - maxSkew: 1
+      #     topologyKey: kubernetes.io/hostname
+      #     whenUnsatisfiable: DoNotSchedule
+      # # Tolerations for the collector
+      # tolerations:
+      #   - key: "key"
+      #     operator: "Equal"
+      #     value: "value"
+      #     effect: "NoSchedule"
+      # # Environment variables for the target allocator
+      # env:
+      #   - name: ENV_VAR1
+      #     value: value1
+      #   - name: ENV_VAR2
+      #     value: value2
+      # # Observability configuration for the target allocator
+      # observability:
+      #   metrics:
+      #     enableMetrics: true
+
+      # Affinity configuration for the collector
+      affinity: {}
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: kubernetes.io/e2e-az-name
+      #               operator: In
+      #               values:
+      #                 - e2e-az1
+      #                 - e2e-az2
+
+      # Lifecycle configuration for the collector
+      lifecycle: {}
+      #   preStop:
+      #     exec:
+      #       command:
+      #         [
+      #           "/bin/sh",
+      #           "-c",
+      #           "echo Hello from the preStop handler > /dev/termination-log",
+      #         ]
+
+      # Liveness probe configuration for the collector
+      livenessProbe: {}
+      #   initialDelaySeconds: 3
+      #   periodSeconds: 5
+      #   timeoutSeconds: 2
+      #   failureThreshold: 5
+
+      # Observability configuration for the collector
+      observability: {}
+      #   metrics:
+      #     enableMetrics: true
+
+      # Update strategy for the collector
+      updateStrategy: {}
+      #   type: RollingUpdate
+
+      # Volume mounts for the collector
+      volumeMounts: []
+      #   - name: data
+      #     mountPath: /data
+
+      # Ports configuration for the collector
+      # The operator automatically calculates ports for known receivers and exporters
+      # Set any custom ports here.
+      ports: []
+      # - name: http
+      #   protocol: TCP
+      #   port: 80
+      #   targetPort: 8080
+
+      # Environment variables for the collector
+      env: []
+      # - name: ENV_VAR1
+      #   value: value1
+      # - name: ENV_VAR2
+      #   value: value2
+
+      # Volume claim templates for the collector
+      volumeClaimTemplates: []
+      # - metadata:
+      #     name: storage
+      #   spec:
+      #     accessModes: ["ReadWriteOnce"]
+      #     resources:
+      #       requests:
+      #         storage: 1Gi
+
+      # Tolerations for the collector
+      tolerations: []
+      # - key: "key"
+      #   operator: "Equal"
+      #   value: "value"
+      #   effect: "NoSchedule"
+
+      # Volumes for the collector
+      volumes: []
+      # - name: config-volume
+      #   configMap:
+      #     name: config
+
+      # Init containers for the collector
+      initContainers: []
+      # - name: init-nginx
+      #   image: nginx
+
+      # Additional containers for the collector
+      additionalContainers: []
+      # - name: additional-container
+      #   image: busybox
+
+      # Topology spread constraints for the collector
+      topologySpreadConstraints: []
+      # - maxSkew: 1
+      #   topologyKey: kubernetes.io/hostname
+      #   whenUnsatisfiable: DoNotSchedule
+      #   labelSelector:
+      #     matchLabels:
+      #       app: my-app
+
+      # Config maps for the collector
+      configmaps: []
+      # - name: config
+      #   mountPath: /etc/config
+
   deployment:
     - name: otel-deployment
       enabled: false
+      managementState: managed
+      mode: deployment
+
+      annotations: {}
+
+      labels: {}
+
+      # Configuration for cluster role binding
+      clusterRoleBinding:
+        enabled: true
+        clusterRoleName: ""

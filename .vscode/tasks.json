@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Render Helm Chart: OTEL",
+      "type": "process",
+      "options": {
+        "cwd": "${workspaceFolder}/Kubernetes/Helm/monitoring/otel"
+      },
+      "command": "helm",
+      "args": [
+        "template",
+        "otel",
+        ".",
+        "--output-dir",
+        "./rendered"
+      ]
+    },
+    {
+      "label": "Delete Helm Chart: OTEL",
+      "type": "process",
+      "options": {
+        "cwd": "${workspaceFolder}/Kubernetes/Helm/monitoring/otel"
+      },
+      "command": "rm",
+      "args": [
+        "-rf",
+        "./rendered"
+      ]
+    }
+  ]
+}
