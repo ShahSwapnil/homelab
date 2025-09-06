@@ -1,0 +1,19 @@
+{{- range $key, $value := .Values.collectors }}
+  {{- range $value }}
+{{- if .enabled }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "otel.collector.clusterRoleBinding" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "otel.collector.clusterRole" $ }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "otel.collector.serviceAccountName" . }}
+    namespace: {{ $.Values.namespace }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -10,7 +10,143 @@ metadata:
     collectorMode: {{ $key }}
     {{- include "otel.labels" $ | nindent 4 }}
 spec:
-  managementState: {{ .managed | default managed }}
+  managementState: {{ .managementState | default "managed" }}
+  mode: {{ .mode }}
+  {{- with .config }}
+  config: 
+  {{- toYaml . | nindent 4 }}
+  {{- end}}
+  {{- if not (eq .mode "daemonset") }}
+  replicas: {{ .replicas | default 2 }}
+  {{- end }}
+  serviceAccount: {{ template "otel.collector.serviceAccountName" . }}
+  imagePullPolicy: {{ .image.pullPolicy | default "IfNotPresent" }}
+  hostNetwork: {{ .hostNetwork | default false }}
+  terminationGracePeriodSeconds: {{ .terminationGracePeriodSeconds | default 30}}
+  {{- with .resources }}
+  resources:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .nodeSelector }}
+  nodeSelector:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .args }}
+  args:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .autoscaler }}
+  autoscaler:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .podDisruptionBudget }}
+  podDisruptionBudget:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  securityContext:
+  {{- toYaml .securityContext | nindent 4 }}
+  {{- with .podSecurityContext }}
+  podSecurityContext:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .podAnnotations }}
+  podAnnotations:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .targetAllocator }}
+  targetAllocator:
+  {{- toYaml . | nindent 4}}
+  {{- end }}  
+  {{- with .ingress }}
+  ingress:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .affinity }}
+  affinity:
+  {{- toYaml . | nindent 4}}
+  {{- end }}  
+{{- with .lifecycle }}
+  lifecycle:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .livenessProbe }}
+  livenessProbe:
+  {{- toYaml . | nindent 4}}
+  {{- end }}  
+  {{- with .observability }}
+  observability:
+  {{- toYaml . | nindent 4}}
+  {{- end }}
+  {{- with .deploymentUpdateStrategy }}
+  deploymentUpdateStrategy:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .volumeMounts }}
+  volumeMounts:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .volumes }}
+  volumes:
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .ports }}
+  ports:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  env:
+  - name: OTEL_K8S_NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  - name: OTEL_K8S_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.hostIP
+  - name: OTEL_K8S_NAMESPACE
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.namespace
+  - name: OTEL_K8S_POD_NAME
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: metadata.name
+  - name: OTEL_K8S_POD_IP
+    valueFrom:
+      fieldRef:
+        apiVersion: v1
+        fieldPath: status.podIP
+  - name: OTEL_RESOURCE_ATTRIBUTES
+    value: "k8s.cluster.name={{ $.Values.clusterName }}"
+  {{- with .envFrom }}
+  envFrom:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}    
+  {{- with .volumeClaimTemplates }}
+  volumeClaimTemplates:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .tolerations }}
+  tolerations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}  
+  {{- with .initContainers }}
+  initContainers:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .additionalContainers }}
+  additionalContainers:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .topologySpreadConstraints }}
+  topologySpreadConstraints:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .configmaps }}
+  configmaps:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

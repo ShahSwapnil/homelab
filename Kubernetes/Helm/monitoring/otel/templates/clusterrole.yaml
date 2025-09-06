@@ -1,23 +1,30 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: otel-collector
+  name: {{ include "otel.collector.clusterRole" . }}
 rules:
 - apiGroups: [""]
   resources:
+  - endpoints
+  - events
   - namespaces
+  - namespaces/status
   - nodes
   - nodes/proxy
   - nodes/metrics
+  - nodes/spec
   - nodes/stats
-  - services
-  - endpoints
-  - pods
-  - events
-  - secrets
   - persistentvolumeclaims
   - persistentvolumes
+  - pods
+  - pods/status
+  - replicationcontrollers
+  - replicationcontrollers/status
+  - resourcequotas
+  - services
+  - secrets
   verbs: ["get", "list", "watch"]
+
 - apiGroups: ["monitoring.coreos.com"]
   resources:
   - servicemonitors
@@ -25,113 +32,55 @@ rules:
   - scrapeconfigs
   - probes
   verbs: ["get", "list", "watch"]
-- apiGroups:
-  - extensions
+
+- apiGroups: ["extensions"]
   resources:
   - ingresses
+  - daemonsets
+  - deployments
+  - replicasets
   verbs: ["get", "list", "watch"]
-- apiGroups:
-  - apps
+
+- apiGroups: ["apps"]
   resources:
   - daemonsets
   - deployments
   - replicasets
   - statefulsets
   verbs: ["get", "list", "watch"]
-- apiGroups:
-  - networking.k8s.io
+
+- apiGroups: ["networking.k8s.io"]
   resources:
   - ingresses
   verbs: ["get", "list", "watch"]
+
 - apiGroups: ["discovery.k8s.io"]
   resources:
   - endpointslices
   verbs: ["get", "list", "watch"]
+
 - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
   verbs: ["get"]
 
-- verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-  apiGroups:
-  - coordination.k8s.io
-  resources:
-  - leases
-- apiGroups:
-  - ""
-  resources:
-  - events
-  - namespaces
-  - namespaces/status
-  - nodes
-  - nodes/spec
-  - pods
-  - pods/status
-  - replicationcontrollers
-  - replicationcontrollers/status
-  - resourcequotas
-  - services
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  - cronjobs
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-    - autoscaling
-  resources:
-    - horizontalpodautoscalers
-  verbs:
-    - get
-    - list
-    - watch
 - apiGroups: ["events.k8s.io"]
   resources: ["events"]
   verbs: ["watch", "list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: otel-collecotor-daemonset
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: otel-collector
-subjects:
-- kind: ServiceAccount
-  # quirk of the Operator
-  name: "otel-ds-service-account"
-  namespace: otel
+
+- apiGroups: ["autoscaling"]
+  resources:
+    - horizontalpodautoscalers
+  verbs: ["get", "list", "watch"]
+
+- apiGroups: ["batch"]
+  resources:
+  - jobs
+  - cronjobs
+  verbs: ["get", "list", "watch"]
+    
+- apiGroups: ["coordination.k8s.io"]
+  resources:
+  - leases
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+
+

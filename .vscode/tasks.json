@@ -13,8 +13,11 @@
         "otel",
         ".",
         "--output-dir",
-        "./rendered"
-      ]
+        "./rendered",
+		"--debug"
+      ],
+      "dependsOn": "Delete Helm Chart: OTEL",
+      "problemMatcher": []
     },
     {
       "label": "Delete Helm Chart: OTEL",
@@ -26,7 +29,8 @@
       "args": [
         "-rf",
         "./rendered"
-      ]
+      ],
+      "problemMatcher": []
     }
   ]
 }

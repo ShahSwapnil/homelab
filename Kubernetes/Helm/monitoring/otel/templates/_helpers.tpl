@@ -53,10 +53,26 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "otel.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "otel.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- define "otel.collector.serviceAccountName" -}}
+{{- default (include "otel.collector.fullname" .) .serviceAccount.name }}
 {{- end }}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "otel.collector.fullname" -}}
+{{- printf "%s-%s-collector" .name .suffix | trunc 63 }}
+{{- end }}
+
+{{/*
+Create the name of Cluster Role
+*/}}
+{{- define "otel.collector.clusterRole" }}
+{{- printf "%s-collector-cluster-role" .Chart.Name }}
+{{- end }}
+
+{{- define "otel.collector.clusterRoleBinding" }}
+{{- printf "%s-collector-cluster-role-binding" .suffix }}
 {{- end }}
