@@ -264,7 +264,7 @@ collectors:
       #     key1: value1
       #     key2: value2
       #   probeSelector:
-      #     key1: value1
+      #     key1: value1Hey KHey
       #     key2: value2
       #   scrapeConfigSelector:
       #     key1: value1

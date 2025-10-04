@@ -161,3 +161,14 @@ data:
     {{- end }}
 
 ```
+
+#### Prometheus Setup
+
+Prometheus community has helm charts that are available[^6]. There are lots of examples.
+
+Install the following Helm Charts
+
+1. Prometheus Operator CRDs[^7]
+
+[^6]:[Prometheus-Community Helm Charts](https://github.com/prometheus-community/helm-charts/tree/main)
+[^7]:[Prometheus Operator CRDs - Helm Chart](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-operator-crds)
