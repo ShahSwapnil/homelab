@@ -27,7 +27,7 @@ crds:
   ## prometheusagents configures the PrometheusAgent CRD
   prometheusagents:
     ## enabled defines if the CRD should be installed
-    enabled: true
+    enabled: false
 
   ## prometheuses configures the Prometheus CRD
   prometheuses:
