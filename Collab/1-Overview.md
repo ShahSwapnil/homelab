@@ -14,7 +14,6 @@ Initial Kick off conversation about HomeLab.
     - [Additionally, how are we going to access things that are running in the cluster once its up and running?](#additionally-how-are-we-going-to-access-things-that-are-running-in-the-cluster-once-its-up-and-running)
     - [What other Questions?](#what-other-questions)
       - [How exactly does Pi-Hole work?](#how-exactly-does-pi-hole-work)
-    - [Build Virtual Machines](#build-virtual-machines)
 
 ## Questions and Answers
 
@@ -111,5 +110,3 @@ I want to be able to navigate to Grafana instance that is running in the cluster
   IpAddress ->> Router: Response
   Router ->> Browser: Response
 ```
-
-#### Build Virtual Machines
