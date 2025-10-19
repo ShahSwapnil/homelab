@@ -107,6 +107,10 @@ Next, install the chart. The command below will create a namespace `grafana` and
 helm install grafana . --create-namespace -n grafana
 ```
 
+```bash
+helm upgrade grafana . -n grafana
+```
+
 next add DNS entry to pi-hole for grafana
 
 `grafana.nscubed.lan` to `192.168.1.81`

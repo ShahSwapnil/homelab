@@ -27,3 +27,15 @@ Same as before - grab the values.yaml
 ```bash
 helm show values oci://ghcr.io/prometheus-community/charts/prometheus > prometheus.values.yaml
 ```
+
+Next let's install Prometheus as a deployment and see what it looks like.
+
+```bash
+helm install prometheus oci://ghcr.io/prometheus-community/charts/prometheus -n prometheus -f prometheus.values.yaml --create-namespace
+```
+
+Following command allows you to render the helm chart before installing it.
+
+```bash
+helm template prometheus oci://ghcr.io/prometheus-community/charts/prometheus -n prometheus -f prometheus.values.yaml --create-namespace --output-dir rendered
+```

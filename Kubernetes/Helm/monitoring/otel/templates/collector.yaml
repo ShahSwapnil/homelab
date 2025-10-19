@@ -12,6 +12,10 @@ metadata:
 spec:
   managementState: {{ .managementState | default "managed" }}
   mode: {{ .mode }}
+  {{- if .targetAllocator.enabled }}
+  tagetAllocator:
+    enabled: true
+  {{- end }}
   {{- with .config }}
   config: 
   {{- toYaml . | nindent 4 }}
