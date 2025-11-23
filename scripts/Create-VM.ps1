@@ -30,12 +30,12 @@ if (Get-VM -Name $VMName -ErrorAction SilentlyContinue) {
 }
 
 Write-Log "Creating VHDX for $VMName..."
-$VHDPath = "$env:ProgramData\Microsoft\Windows\Hyper-V\$VMName.vhdx"
+$VHDPath = "D:\VirtualMachines\Virtual Hard Disks\$VMName.vhdx"
 New-VHD -Path $VHDPath -SizeBytes ($HDSizeGB * 1GB) -Dynamic | Out-Null
 
 if ($SecondHDSizeGB -gt 0) {
     Write-Log "Creating second VHDX for $VMName..."
-    $SecondVHDPath = "$env:ProgramData\Microsoft\Windows\Hyper-V\$VMName-2.vhdx"
+    $SecondVHDPath = "D:\VirtualMachines\Virtual Hard Disks\$VMName-2.vhdx"
     New-VHD -Path $SecondVHDPath -SizeBytes ($SecondHDSizeGB * 1GB) -Dynamic | Out-Null
 }
 
@@ -57,6 +57,6 @@ Write-Log "Adding DVD drive and attaching ISO..."
 Add-VMDvdDrive -VMName $VMName -Path $ISOPath
 
 Write-Log "Enabling Secure Boot..."
-Set-VMFirmware -VMName $VMName -EnableSecureBoot On
+Set-VMFirmware -VMName $VMName -EnableSecureBoot On -SecureBootTemplate "MicrosoftUEFICertificateAuthority"
 
 Write-Log "VM $VMName creation complete."
