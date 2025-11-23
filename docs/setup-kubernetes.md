@@ -16,8 +16,7 @@
     - [Configure the `systemd` cgroup driver](#configure-the-systemd-cgroup-driver)
 - [Install kubeadm, kubelet and kubectl](#install-kubeadm-kubelet-and-kubectl)
 - [Create Cluster](#create-cluster)
-- [Configure Cluster](#configure-cluster)
-  - [Install Cilium](#install-cilium)
+- [Additional Tools](#additional-tools)
 
 
 ## Prerequisite
@@ -230,11 +229,11 @@ kubeadm init
 5. Run the join command to add the worker nodes to the cluster
 6. Run `kubectl get nodes` to display all the nodes
 
-## Configure Cluster
+## Additional Tools
 
 Install Helm and k9s to make interacting with the cluster easier. 
 
 [K9s Docs - Install](https://k9scli.io/topics/install/)
 [Helm Docs - Install Helm](https://helm.sh/docs/intro/install)
 
-### Install Cilium
+
