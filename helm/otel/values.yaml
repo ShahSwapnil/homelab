@@ -1,0 +1,67 @@
+opentelemetry-kube-stack:
+  crds:
+    installPrometheus: false
+  
+  kubernetesServiceMonitors:
+    enabled: true
+
+  kubeApiServer:
+    enabled: true
+
+  kubelet:
+    enabled: true
+    serviceMonitor:
+      https: false
+    
+  kubeControllerManager:
+    enabled: true
+
+  coreDns:
+    enabled: true
+
+  kubeEtcd:
+    enabled: true
+
+  kubeScheduler: 
+    enabled: true
+
+  kubeProxy:
+    enabled: true
+
+  kubeStateMetrics:
+    enabled: true
+
+  nodeExporter:
+    enabled: true
+
+  defaultCRConfig:
+    config:
+      exporters:
+        otlphttp/logs:
+          endpoint: http://loki-gateway.monitoring.svc.cluster.local:80/otlp
+          tls:
+            insecure: true
+        otlphttp/metrics:
+          endpoint: http://prometheus-server.monitoring.svc.cluster.local:80/api/v1/otlp
+          tls:
+            insecure: true
+
+  collectors:
+    daemon:
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      config:
+        service:
+          pipelines:
+            logs:
+              exporters:
+                #- debug
+                - otlphttp/logs
+            metrics:
+              exporters:
+                #- debug
+                - otlphttp/metrics
+            
+

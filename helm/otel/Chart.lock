@@ -1,0 +1,6 @@
+dependencies:
+- name: opentelemetry-kube-stack
+  repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  version: 0.12.3
+digest: sha256:84bb0b5ab8354a380348060ff31beff5697ddd2f69b05dd6de5c4d2281cef15d
+generated: "2025-11-26T09:52:28.082961-05:00"

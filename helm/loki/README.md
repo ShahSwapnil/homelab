@@ -66,6 +66,8 @@ Then verify that Loki did receive the data using the following command:
 curl "http://127.0.0.1:3100/loki/api/v1/query_range" --data-urlencode 'query={job="test"}' | jq .data.result
 ```
 
+
+
 ***********************************************************************
 Connecting Grafana to Loki
 ***********************************************************************
