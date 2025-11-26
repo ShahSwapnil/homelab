@@ -47,7 +47,7 @@ grafana:
     # autoMount: false
     automountServiceAccountToken: false
 
-  replicas: 1
+  replicas: 2
 
   ## Create a headless service for the deployment
   headlessService: false
