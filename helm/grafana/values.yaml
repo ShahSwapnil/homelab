@@ -47,7 +47,7 @@ grafana:
     # autoMount: false
     automountServiceAccountToken: false
 
-  replicas: 2
+  replicas: 1
 
   ## Create a headless service for the deployment
   headlessService: false
@@ -422,7 +422,7 @@ grafana:
     volumeName: ""
     accessModes:
       - ReadWriteOnce
-    size: 10Gi
+    size: 5Gi
     # annotations: {}
     finalizers:
       - kubernetes.io/pvc-protection
@@ -889,9 +889,9 @@ grafana:
     server:
       domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else }}''{{ end }}"
   ## grafana Authentication can be enabled with the following values on grafana.ini
-  # server:
-        # The full public facing url you use in browser, used for redirects and emails
-  #    root_url:
+    server:
+          # The full public facing url you use in browser, used for redirects and emails
+      root_url: https://grafana.nscubed.lan
   # https://grafana.com/docs/grafana/latest/auth/github/#enable-github-in-grafana
   # auth.github:
   #    enabled: false
