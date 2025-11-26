@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-loki
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"    
+data:
+  loki-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+     - name: loki
+       type: loki
+       url: http://prometheus-prometheus-server
+       access: proxy
+       isDefault: true

@@ -18,6 +18,7 @@
 - [Create Cluster](#create-cluster)
 - [Additional Tools](#additional-tools)
 
+Next Steps: [Cilium](../helm/cilium/README.md)
 
 ## Prerequisite
 
@@ -207,12 +208,12 @@ sudo systemctl enable --now kubelet
 
 ## Create Cluster
 
-1. Initialize Control Plane
+1. Initialize Control Plane without Kube Proxy [^1]
 
 ```bash
 sudo ufw allow 6443/tcp
 sudo ufw reload
-kubeadm init
+kubeadm init --skip-phases=addon/kube-proxy
 ```
 
 2. Copy the kube config to host, Before you can copy the file. You need to copy and setup permissions
@@ -227,7 +228,11 @@ kubeadm init
    ```
 4. `kubectl` should now work on the host. 
 5. Run the join command to add the worker nodes to the cluster
-6. Run `kubectl get nodes` to display all the nodes
+6. Run the following command to apply a taint to each of the nodes
+   ```bash
+   kubectl taint nodes worker-node-2 node.cilium.io/agent-not-ready:NoExecute
+   ```
+7. Run `kubectl get nodes` to display all the nodes
 
 ## Additional Tools
 
@@ -237,3 +242,4 @@ Install Helm and k9s to make interacting with the cluster easier.
 [Helm Docs - Install Helm](https://helm.sh/docs/intro/install)
 
 
+[^1]: [Kube Proxy Replacement](https://cilium.io/use-cases/kube-proxy/)

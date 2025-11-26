@@ -42,6 +42,9 @@ if ($SecondHDSizeGB -gt 0) {
 Write-Log "Creating VM $VMName..."
 New-VM -Name $VMName -MemoryStartupBytes ($RAM * 1MB) -Generation 2 -VHDPath $VHDPath -SwitchName $SwitchName | Out-Null
 
+Write-Log "Disabling dynamic memory..."
+Set-VMMemory -VMName $VMName -DynamicMemoryEnabled $false
+
 Write-Log "Setting processor count to $ProcessorCount..."
 Set-VMProcessor -VMName $VMName -Count $ProcessorCount
 

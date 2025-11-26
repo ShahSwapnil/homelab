@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: https-my-nginx
+spec:
+  hostnames:
+  - "nginx.nscubed.lan"
+
+  parentRefs:
+  - name: nscubed-tls-gateway
+    namespace: default
+
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /
+    backendRefs:
+    - name: my-nginx
+      port: 80
+
+

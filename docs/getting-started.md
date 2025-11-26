@@ -33,8 +33,6 @@ I created `Create-K8sCluster.ps1` to execute the following commands.
 
 4. Once the VMs have been created, turn them on and start the Ubuntu Installation. Follow the prompts on the screen to finish installing ubuntu and restarted. Be sure to install the following during installation
    1. OpenSSH Server
-   2. Powershell
-
 
 ## Setup SSH
 
@@ -61,6 +59,19 @@ On the Host execute the following commands. Follow the prompts and enter your pa
 
 ```bash
 ssh-copy-id <user>@<ip_adddress>
+```
+
+to remove existing known hosts. 
+```pwsh
+ssh-keygen -R 192.168.1.69
+ssh-keygen -R 192.168.1.71
+ssh-keygen -R 192.168.1.72
+```
+
+```pwsh
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh neil@192.168.1.69 "cat >> .ssh/authorized_keys"
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh neil@192.168.1.71 "cat >> .ssh/authorized_keys"
+Get-Content "$env:USERPROFILE\.ssh\id_ed25519.pub" | ssh neil@192.168.1.72 "cat >> .ssh/authorized_keys"
 ```
 
 ### Setup SSH to use Names instead of IP Address

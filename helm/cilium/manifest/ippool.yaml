@@ -1,0 +1,10 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: global-lb-pool
+spec:
+  blocks:
+    - start: 192.168.1.80
+      stop: 192.168.1.149
+  # This empty selector makes the pool available to ALL Services in the cluster.
+  serviceSelector: {}
