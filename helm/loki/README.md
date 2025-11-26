@@ -93,3 +93,13 @@ You can now access MinIO server on http://localhost:9000. Follow the below steps
   2. export MC_HOST_loki-minio-local=http://$(kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootUser}" | base64 --decode):$(kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootPassword}" | base64 --decode)@localhost:9000
 
   3. mc ls loki-minio-local
+
+
+```bash
+$(kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootUser}" | base64 --decode):$(kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootPassword}" | base64 --decode
+```
+
+```pwsh
+kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootUser}" | Foreach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+kubectl get secret --namespace monitoring loki-minio -o jsonpath="{.data.rootPassword}" | Foreach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+```
