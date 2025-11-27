@@ -8,7 +8,6 @@ metadata:
   annotations:
     meta.helm.sh/release-name: prometheus
     meta.helm.sh/release-namespace: monitoring
-  creationTimestamp: "2025-11-26T14:39:40Z"
   labels:
     app.kubernetes.io/component: server
     app.kubernetes.io/instance: prometheus
@@ -19,8 +18,6 @@ metadata:
     helm.sh/chart: prometheus-27.46.0
   name: prometheus-server
   namespace: monitoring
-  resourceVersion: "214889"
-  uid: ecdc691a-3a79-4dba-bab8-1e3c289b38c8
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
