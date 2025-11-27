@@ -1066,7 +1066,7 @@ grafana:
       # Sets the size limit of the alert sidecar emptyDir volume
       sizeLimit: ""
     dashboards:
-      enabled: false
+      enabled: true
       # Additional environment variables for the dashboards sidecar
       env: {}
       ## "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
@@ -1105,7 +1105,7 @@ grafana:
       resource: both
       # If specified, the sidecar will look for annotation with this name to create folder and put graph here.
       # You can use this parameter together with `provider.foldersFromFilesStructure`to annotate configmaps and create folder structure.
-      folderAnnotation: null
+      folderAnnotation: grafana_dashbaord
       #
       # resourceName: comma separated list of resource names to be fetched/checked by this sidecar.
       # per default all resources of the type defined in {{ .Values.sidecar.dashboards.resource }} will be checked.
@@ -1167,7 +1167,7 @@ grafana:
         # allow updating provisioned dashboards from the UI
         allowUiUpdates: false
         # allow Grafana to replicate dashboard structure from filesystem
-        foldersFromFilesStructure: false
+        foldersFromFilesStructure: true
       # Additional dashboards sidecar volume mounts
       extraMounts: []
       # Sets the size limit of the dashboard sidecar emptyDir volume

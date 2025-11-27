@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-api-app
+  labels:
+    app: test-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-api
+  template:
+    metadata:
+      labels:
+        app: test-api
+    spec:
+      containers:
+      - name: my-app-container
+        # 🚨 2. Use the full Harbor image path
+        image: harbor.nscubed.lan/nscubed/api:0.0.2
+        ports:
+        - containerPort: 8080
