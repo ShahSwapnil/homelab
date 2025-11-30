@@ -51,7 +51,7 @@ opentelemetry-kube-stack:
       enabled: false
     otel-daemon:
       enabled: true
-      name: otel-daemon
+      fullnameOverride: otel-daemon
       mode: daemonset
       prometheusCR:
         enabled: true
@@ -64,7 +64,11 @@ opentelemetry-kube-stack:
           enabled: true    
         kubernetesAttributes:
           enabled: true
+          extractAllPodLabels: true
+          extractAllPodAnnotations: true
         hostMetrics:
+          enabled: true
+        kubeletMetrics:
           enabled: true
       resources:
         limits:
@@ -85,10 +89,30 @@ opentelemetry-kube-stack:
           resourcedetection/env:
             detectors:
             - env
+            - k8snode
+            k8snode:
+              node_from_env_var: "OTEL_K8S_NODE_NAME"
+            override: false
+            timeout: 2s
           batch:
             send_batch_size: 1000
             timeout: 1s
             send_batch_max_size: 1500
+        receivers:
+              prometheus:
+                config:
+                  scrape_configs:
+                  - job_name: 'otel-collector'
+                    scrape_interval: 10s
+                    static_configs:
+                    - targets: [ '0.0.0.0:8888' ]
+                    metric_relabel_configs:
+                    - action: labeldrop
+                      regex: (id|name)
+                      replacement: $$1
+                    - action: labelmap
+                      regex: label_(.+)
+                      replacement: $$1            
         service:
           pipelines:
             logs:
@@ -103,13 +127,85 @@ opentelemetry-kube-stack:
             metrics:
               receivers:
                 - hostmetrics
+                - prometheus
               processors:
                 - k8sattributes
                 - resourcedetection/env
                 - resource/hostname
                 - batch
               exporters:
-                - debug
+                # - debug
                 - otlphttp/metrics
+    deployment:
+      enabled: true
+      fullnameOverride : otel-cluster-deployment
+      mode: deployment
+      replicas: 1
+      presets:        
+        kubernetesEvents:
+          enabled: true
+        clusterMetrics:
+          enabled: true
+        kubernetesAttributes:
+          enabled: true
+          extractAllPodLabels: true
+          extractAllPodAnnotations: true
+      config:
+        exporters:
+            debug: {}
+        processors:
+          resource/hostname:
+            attributes:
+            - action: insert
+              from_attribute: k8s.node.name
+              key: host.name
+          resourcedetection/env:
+            detectors:
+            - env
+            - k8snode
+            k8snode:
+              node_from_env_var: "OTEL_K8S_NODE_NAME"
+            override: false
+            timeout: 2s
+          batch:
+            send_batch_size: 1000
+            timeout: 1s
+            send_batch_max_size: 1500
+        receivers:
+          prometheus:
+            config:
+              scrape_configs:
+              - job_name: 'otel-collector'
+                scrape_interval: 10s
+                static_configs:
+                - targets: [ '0.0.0.0:8888' ]
+                metric_relabel_configs:
+                - action: labeldrop
+                  regex: (id|name)
+                  replacement: $$1
+                - action: labelmap
+                  regex: label_(.+)
+                  replacement: $$1   
+        service:
+          extensions:
+          - k8s_leader_elector/k8s_objects
+          - k8s_leader_elector/k8s_cluster
+          pipelines:
+            metrics:
+              receivers:
+                - prometheus
+                - k8s_cluster
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - batch
+              exporters:
+                - otlphttp/metrics
+                - debug
+
+
+
+      
             
 

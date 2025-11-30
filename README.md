@@ -36,19 +36,29 @@ Total Resources
 
 - 2 Processors
 - 5 GB RAM
-- 40 GB Storage
+- 100 GB Storage
 - Mac Address: 00155D00C70A / IP Address: 192.168.1.69
 
 ### Worker Node
 
 - 5 Processors
 - 44 GB Ram
-- 50 GB Storage
+- 100 GB Storage
 - 350 GB extra storage
 - Mac Addresses: 00155D00C70C / 00155D00C70D
 - IP Addresses: 
   - WN #1: 192.168.1.71
   - WN #2: 192.168.1.72
+
+# Disk Space
+
+942 GB
+- 100 GB CP
+- 100 GB WN
+- 100 GB Wn
+- 100 GB Development
+- 542 GB for Application Storage
+  - 271 GB
 
 ## Goals
 
