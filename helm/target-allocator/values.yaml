@@ -1,0 +1,15 @@
+targetAllocator:
+  config:
+    allocation_strategy: consistent-hashing
+    collector_namespace: monitoring
+    collector_selector:
+      matchLabels:
+        app.kubernetes.io/component: opentelemetry-collector
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi

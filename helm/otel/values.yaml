@@ -3,33 +3,33 @@ opentelemetry-kube-stack:
     installPrometheus: false
   
   kubernetesServiceMonitors:
-    enabled: true
+    enabled: false
 
   kubeApiServer:
-    enabled: true
+    enabled: false
 
   kubelet:
-    enabled: true
+    enabled: false
     serviceMonitor:
       https: false
     
   kubeControllerManager:
-    enabled: true
+    enabled: false
 
   coreDns:
-    enabled: true
+    enabled: false
 
   kubeEtcd:
-    enabled: true
+    enabled: false
 
   kubeScheduler: 
-    enabled: true
+    enabled: false
 
   kubeProxy:
-    enabled: true
+    enabled: false
 
   kubeStateMetrics:
-    enabled: true
+    enabled: false
 
   nodeExporter:
     enabled: true
@@ -48,20 +48,68 @@ opentelemetry-kube-stack:
 
   collectors:
     daemon:
+      enabled: false
+    otel-daemon:
+      enabled: true
+      name: otel-daemon
+      mode: daemonset
+      prometheusCR:
+        enabled: true
       tolerations:
       - key: "node-role.kubernetes.io/control-plane"
         operator: "Exists"
         effect: "NoSchedule"
+      presets:
+        logsCollection:
+          enabled: true    
+        kubernetesAttributes:
+          enabled: true
+        hostMetrics:
+          enabled: true
+      resources:
+        limits:
+          cpu: 200m
+          memory: 500Mi
+        requests:
+          cpu: 100m
+          memory: 250Mi        
       config:
+        exporters:
+          debug: {}
+        processors:
+          resource/hostname:
+            attributes:
+            - action: insert
+              from_attribute: k8s.node.name
+              key: host.name
+          resourcedetection/env:
+            detectors:
+            - env
+          batch:
+            send_batch_size: 1000
+            timeout: 1s
+            send_batch_max_size: 1500
         service:
           pipelines:
             logs:
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - batch
               exporters:
                 #- debug
                 - otlphttp/logs
             metrics:
+              receivers:
+                - hostmetrics
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - batch
               exporters:
-                #- debug
+                - debug
                 - otlphttp/metrics
             
 
