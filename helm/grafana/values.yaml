@@ -416,7 +416,7 @@ grafana:
   ##
   persistence:
     type: pvc
-    enabled: false
+    enabled: true
     # storageClassName: default
     ## (Optional) Use this to bind the claim to an existing PersistentVolume (PV) by name.
     volumeName: ""
@@ -1066,7 +1066,7 @@ grafana:
       # Sets the size limit of the alert sidecar emptyDir volume
       sizeLimit: ""
     dashboards:
-      enabled: true
+      enabled: false
       # Additional environment variables for the dashboards sidecar
       env: {}
       ## "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
@@ -1173,7 +1173,7 @@ grafana:
       # Sets the size limit of the dashboard sidecar emptyDir volume
       sizeLimit: ""
     datasources:
-      enabled: true
+      enabled: false
       # Additional environment variables for the datasourcessidecar
       env: {}
       ## "valueFrom" environment variable references that will be added to deployment pods. Name is templated.

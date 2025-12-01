@@ -12,6 +12,8 @@ helm template loki . -f values.yaml -n monitoring --output-dir rendered
 helm install loki . -f values.yaml -n monitoring --render-subchart-notes
 ```
 
+helm upgrade loki . -f values.yaml -n monitoring 
+
 ## Notes after Install
 
 ***********************************************************************

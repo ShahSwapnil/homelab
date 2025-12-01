@@ -3,33 +3,33 @@ opentelemetry-kube-stack:
     installPrometheus: false
   
   kubernetesServiceMonitors:
-    enabled: false
+    enabled: true
 
   kubeApiServer:
-    enabled: false
+    enabled: true
 
   kubelet:
-    enabled: false
+    enabled: true
     serviceMonitor:
       https: false
     
   kubeControllerManager:
-    enabled: false
+    enabled: true
 
   coreDns:
-    enabled: false
+    enabled: true
 
   kubeEtcd:
-    enabled: false
+    enabled: true
 
   kubeScheduler: 
-    enabled: false
+    enabled: true
 
   kubeProxy:
-    enabled: false
+    enabled: true
 
   kubeStateMetrics:
-    enabled: false
+    enabled: true
 
   nodeExporter:
     enabled: true
@@ -44,7 +44,7 @@ opentelemetry-kube-stack:
         otlphttp/metrics:
           endpoint: http://prometheus-server.monitoring.svc.cluster.local:80/api/v1/otlp
           tls:
-            insecure: true
+            insecure: true          
 
   collectors:
     daemon:
@@ -81,6 +81,18 @@ opentelemetry-kube-stack:
         exporters:
           debug: {}
         processors:
+          # metricstransform/nodeinfo:
+          #   transforms:
+          #     - include: k8s.node.condition_ready
+          #       # match_type specifies whether the include name should be used as a strict match or regexp match, default = strict
+          #       match_type: strict
+          #       action: insert
+          #       new_name: k8s.node.info
+          resource/clustername:
+            attributes:
+              - key: k8s.cluster.name
+                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                action: upsert  
           resource/hostname:
             attributes:
             - action: insert
@@ -95,24 +107,17 @@ opentelemetry-kube-stack:
             override: false
             timeout: 2s
           batch:
-            send_batch_size: 1000
-            timeout: 1s
-            send_batch_max_size: 1500
+            send_batch_size: 250
+            timeout: 10s
+            send_batch_max_size: 500
         receivers:
-              prometheus:
-                config:
-                  scrape_configs:
-                  - job_name: 'otel-collector'
-                    scrape_interval: 10s
-                    static_configs:
-                    - targets: [ '0.0.0.0:8888' ]
-                    metric_relabel_configs:
-                    - action: labeldrop
-                      regex: (id|name)
-                      replacement: $$1
-                    - action: labelmap
-                      regex: label_(.+)
-                      replacement: $$1            
+          prometheus:
+            config:
+              scrape_configs:
+              - job_name: 'otel-collector'
+                scrape_interval: 10s
+                static_configs:
+                - targets: [ '0.0.0.0:8888' ]         
         service:
           pipelines:
             logs:
@@ -120,6 +125,7 @@ opentelemetry-kube-stack:
                 - k8sattributes
                 - resourcedetection/env
                 - resource/hostname
+                - resource/clustername
                 - batch
               exporters:
                 #- debug
@@ -132,6 +138,8 @@ opentelemetry-kube-stack:
                 - k8sattributes
                 - resourcedetection/env
                 - resource/hostname
+                - resource/clustername
+                # - metricstransform/nodeinfo
                 - batch
               exporters:
                 # - debug
@@ -152,8 +160,22 @@ opentelemetry-kube-stack:
           extractAllPodAnnotations: true
       config:
         exporters:
-            debug: {}
+            #debug: {}
+            debug:
+              verbosity: detailed
         processors:
+          # metricstransform/nodeinfo:
+          #   transforms:
+          #     - include: k8s.node.condition_ready
+          #       # match_type specifies whether the include name should be used as a strict match or regexp match, default = strict
+          #       match_type: strict
+          #       action: insert
+          #       new_name: k8s.node.info
+          resource/clustername:
+            attributes:
+              - key: k8s.cluster.name
+                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                action: upsert              
           resource/hostname:
             attributes:
             - action: insert
@@ -168,9 +190,9 @@ opentelemetry-kube-stack:
             override: false
             timeout: 2s
           batch:
-            send_batch_size: 1000
-            timeout: 1s
-            send_batch_max_size: 1500
+            send_batch_size: 250
+            timeout: 10s
+            send_batch_max_size: 500
         receivers:
           prometheus:
             config:
@@ -178,14 +200,7 @@ opentelemetry-kube-stack:
               - job_name: 'otel-collector'
                 scrape_interval: 10s
                 static_configs:
-                - targets: [ '0.0.0.0:8888' ]
-                metric_relabel_configs:
-                - action: labeldrop
-                  regex: (id|name)
-                  replacement: $$1
-                - action: labelmap
-                  regex: label_(.+)
-                  replacement: $$1   
+                - targets: [ '0.0.0.0:8888' ]                
         service:
           extensions:
           - k8s_leader_elector/k8s_objects
@@ -193,12 +208,14 @@ opentelemetry-kube-stack:
           pipelines:
             metrics:
               receivers:
-                - prometheus
+                # - prometheus
                 - k8s_cluster
               processors:
                 - k8sattributes
                 - resourcedetection/env
                 - resource/hostname
+                - resource/clustername
+                # - metricstransform/nodeinfo
                 - batch
               exporters:
                 - otlphttp/metrics
