@@ -55,10 +55,10 @@ opentelemetry-kube-stack:
       mode: daemonset
       prometheusCR:
         enabled: true
-      tolerations:
-      - key: "node-role.kubernetes.io/control-plane"
-        operator: "Exists"
-        effect: "NoSchedule"
+      # tolerations:
+      # - key: "node-role.kubernetes.io/control-plane"
+      #   operator: "Exists"
+      #   effect: "NoSchedule"
       presets:
         logsCollection:
           enabled: true    
@@ -72,22 +72,15 @@ opentelemetry-kube-stack:
           enabled: false
       resources:
         limits:
-          cpu: 200m
-          memory: 500Mi
+          cpu: 300m
+          memory: 750Mi
         requests:
-          cpu: 100m
-          memory: 250Mi        
+          cpu: 200m
+          memory: 500Mi        
       config:
         exporters:
           debug: {}
         processors:
-          # metricstransform/nodeinfo:
-          #   transforms:
-          #     - include: k8s.node.condition_ready
-          #       # match_type specifies whether the include name should be used as a strict match or regexp match, default = strict
-          #       match_type: strict
-          #       action: insert
-          #       new_name: k8s.node.info
           resource/clustername:
             attributes:
               - key: k8s.cluster.name
@@ -144,6 +137,96 @@ opentelemetry-kube-stack:
               exporters:
                 - debug
                 - otlphttp/metrics
+    otel-daemon-cp:
+      enabled: true
+      fullnameOverride: otel-daemon-cp
+      mode: daemonset
+      prometheusCR:
+        enabled: true
+      tolerations:
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      nodeSelector:
+          node-role.kubernetes.io/control-plane: ""
+      presets:
+        logsCollection:
+          enabled: true    
+        kubernetesAttributes:
+          enabled: true
+          # extractAllPodLabels: true
+          # extractAllPodAnnotations: true
+        hostMetrics:
+          enabled: true
+        kubeletMetrics:
+          enabled: false
+      resources:
+        limits:
+          cpu: 200m
+          memory: 500Mi
+        requests:
+          cpu: 100m
+          memory: 250Mi        
+      config:
+        exporters:
+          debug: {}
+        processors:
+          resource/clustername:
+            attributes:
+              - key: k8s.cluster.name
+                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                action: upsert  
+          resource/hostname:
+            attributes:
+            - action: insert
+              from_attribute: k8s.node.name
+              key: host.name
+          resourcedetection/env:
+            detectors:
+            - env
+            - k8snode
+            k8snode:
+              node_from_env_var: "OTEL_K8S_NODE_NAME"
+            override: false
+            timeout: 2s
+          batch:
+            send_batch_size: 250
+            timeout: 10s
+            send_batch_max_size: 500
+        receivers:
+          prometheus:
+            config:
+              scrape_configs:
+              - job_name: 'otel-collector'
+                scrape_interval: 10s
+                static_configs:
+                - targets: [ '0.0.0.0:8888' ]         
+        service:
+          pipelines:
+            logs:
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - resource/clustername
+                - batch
+              exporters:
+                #- debug
+                - otlphttp/logs
+            metrics:
+              receivers:
+                - hostmetrics
+                - prometheus
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - resource/clustername
+                # - metricstransform/nodeinfo
+                - batch
+              exporters:
+                - debug
+                - otlphttp/metrics                
     deployment:
       enabled: true
       fullnameOverride : otel-cluster-deployment
@@ -160,6 +243,13 @@ opentelemetry-kube-stack:
           # extractAllPodAnnotations: true
         kubeletMetrics:
           enabled: true
+      resources:
+        limits:
+          cpu: 300m
+          memory: 500Mi
+        requests:
+          cpu: 200m
+          memory: 250Mi  
       config:
         exporters:
             debug: {}
