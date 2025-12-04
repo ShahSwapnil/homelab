@@ -151,8 +151,7 @@ prometheus:
     releaseNamespace: false
 
     ## namespaces to monitor (instead of monitoring all - clusterwide). Needed if you want to run without Cluster-admin privileges.
-    namespaces:
-      - random
+    # namespaces: 
 
     # sidecarContainers - add more containers to prometheus server
     # Key/Value where Key is the sidecar `- name: <Key>`
@@ -381,7 +380,7 @@ prometheus:
     ## Defining configMapOverrideName will cause templates/server-configmap.yaml
     ## to NOT generate a ConfigMap resource
     ##
-    configMapOverrideName: "none"
+    configMapOverrideName: ""
 
     ## Extra labels for Prometheus server ConfigMap (ConfigMap that holds serverFiles)
     extraConfigmapLabels: {}

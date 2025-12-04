@@ -64,12 +64,12 @@ opentelemetry-kube-stack:
           enabled: true    
         kubernetesAttributes:
           enabled: true
-          extractAllPodLabels: true
-          extractAllPodAnnotations: true
+          # extractAllPodLabels: true
+          # extractAllPodAnnotations: true
         hostMetrics:
           enabled: true
         kubeletMetrics:
-          enabled: true
+          enabled: false
       resources:
         limits:
           cpu: 200m
@@ -142,7 +142,7 @@ opentelemetry-kube-stack:
                 # - metricstransform/nodeinfo
                 - batch
               exporters:
-                # - debug
+                - debug
                 - otlphttp/metrics
     deployment:
       enabled: true
@@ -156,13 +156,15 @@ opentelemetry-kube-stack:
           enabled: true
         kubernetesAttributes:
           enabled: true
-          extractAllPodLabels: true
-          extractAllPodAnnotations: true
+          # extractAllPodLabels: true
+          # extractAllPodAnnotations: true
+        kubeletMetrics:
+          enabled: true
       config:
         exporters:
-            #debug: {}
-            debug:
-              verbosity: detailed
+            debug: {}
+            # debug:
+            #   verbosity: detailed
         processors:
           # metricstransform/nodeinfo:
           #   transforms:
@@ -206,9 +208,19 @@ opentelemetry-kube-stack:
           - k8s_leader_elector/k8s_objects
           - k8s_leader_elector/k8s_cluster
           pipelines:
+            logs:
+              processors:
+                - k8sattributes
+                - resourcedetection/env
+                - resource/hostname
+                - resource/clustername
+                - batch
+              exporters:
+                #- debug
+                - otlphttp/logs
             metrics:
               receivers:
-                # - prometheus
+                - prometheus
                 - k8s_cluster
               processors:
                 - k8sattributes
@@ -218,8 +230,8 @@ opentelemetry-kube-stack:
                 # - metricstransform/nodeinfo
                 - batch
               exporters:
-                - otlphttp/metrics
                 - debug
+                - otlphttp/metrics
 
 
 

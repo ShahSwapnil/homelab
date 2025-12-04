@@ -5,6 +5,8 @@ targetAllocator:
     collector_selector:
       matchLabels:
         app.kubernetes.io/component: opentelemetry-collector
+    prometheus_cr:
+      enabled: true
 
   resources:
     limits:

@@ -82,6 +82,7 @@ grafana:
     httpGet:
       path: /api/health
       port: 3000
+    timeoutSeconds: 10
 
   livenessProbe:
     httpGet:
@@ -354,11 +355,11 @@ grafana:
 
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 250m
+      memory: 256Mi
 
   ## Node labels for pod assignment
   ## ref: https://kubernetes.io/docs/user-guide/node-selection/
@@ -891,7 +892,7 @@ grafana:
   ## grafana Authentication can be enabled with the following values on grafana.ini
     server:
           # The full public facing url you use in browser, used for redirects and emails
-      root_url: https://grafana.nscubed.lan
+      root_url: ""
   # https://grafana.com/docs/grafana/latest/auth/github/#enable-github-in-grafana
   # auth.github:
   #    enabled: false

@@ -6,3 +6,5 @@
 ```pwsh
 helm install target-allocator open-telemetry/opentelemetry-target-allocator -f values.yaml -n monitoring
 ```
+
+helm upgrade target-allocator open-telemetry/opentelemetry-target-allocator -f values.yaml -n monitoring
