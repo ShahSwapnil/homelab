@@ -72,10 +72,10 @@ opentelemetry-kube-stack:
           enabled: false
       resources:
         limits:
-          cpu: 300m
+          cpu: 400m
           memory: 750Mi
         requests:
-          cpu: 200m
+          cpu: 275m
           memory: 500Mi        
       config:
         exporters:
@@ -245,10 +245,10 @@ opentelemetry-kube-stack:
           enabled: true
       resources:
         limits:
-          cpu: 300m
+          cpu: 500m
           memory: 500Mi
         requests:
-          cpu: 200m
+          cpu: 350m
           memory: 250Mi  
       config:
         exporters:

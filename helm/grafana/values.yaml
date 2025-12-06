@@ -355,10 +355,10 @@ grafana:
 
   resources:
     limits:
-      cpu: 500m
+      cpu: 600m
       memory: 512Mi
     requests:
-      cpu: 250m
+      cpu: 350m
       memory: 256Mi
 
   ## Node labels for pod assignment
