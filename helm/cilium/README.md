@@ -27,6 +27,9 @@ Notes from setting up Cilium
    helm show values cilium/cilium --version 1.18.4 | Out-File -FilePath ./values.yaml -Encoding UTF8
    ```
 3. Render the helm chart
+   ```pwsh
+   helm template cilium cilium/cilium --version 1.18.4 -n kube-system --output-dir rendered --debug
+   ```
 4. Install the Helm Chart
 
 

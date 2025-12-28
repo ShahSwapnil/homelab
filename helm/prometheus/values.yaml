@@ -711,13 +711,13 @@ prometheus:
     ## Prometheus server resource requests and limits
     ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
     ##
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 512Mi
-      # requests:
-      #   cpu: 500m
-      #   memory: 512Mi
+    resources:
+      limits:
+        # cpu: 500m
+        memory: 1024Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
 
     # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
     # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working
@@ -859,7 +859,22 @@ prometheus:
   # adds additional scrape configs to prometheus.yml
   # must be a string so you have to add a | after extraScrapeConfigs:
   # example adds prometheus-blackbox-exporter scrape config
-  extraScrapeConfigs: ""
+  extraScrapeConfigs: |
+      - job_name: 'global_label_injector'
+        # This uses Prometheus itself as a target, just to ensure
+        # the configuration is valid and applies to at least one job.
+        # It's a common trick to inject global relabeling rules.
+        scrape_interval: 1h
+        static_configs:
+          - targets: ['localhost:9090']
+
+        # The key is the metric_relabel_configs section
+        # This rule will be applied to every metric scraped by this job.
+        metric_relabel_configs:
+          - source_labels: [] # Match all metrics (no input labels needed)
+            target_label: cluster # The name of your new label
+            replacement: nsck8sdev # The value of your new label
+            action: replace
     # - job_name: 'prometheus-blackbox-exporter'
     #   metrics_path: /probe
     #   params:
