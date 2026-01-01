@@ -24,11 +24,11 @@ Notes from setting up Cilium
    ```
 2. Get the Values from the Helm chart
    ```pwsh
-   helm show values cilium/cilium --version 1.18.4 | Out-File -FilePath ./values.yaml -Encoding UTF8
+   helm show values cilium/cilium --version 1.18.5 | Out-File -FilePath ./values.yaml -Encoding UTF8
    ```
 3. Render the helm chart
    ```pwsh
-   helm template cilium cilium/cilium --version 1.18.4 -n kube-system --output-dir rendered --debug
+   helm template cilium cilium/cilium --version 1.18.5 -n kube-system --output-dir rendered --debug
    ```
 4. Install the Helm Chart
 
@@ -41,7 +41,7 @@ Notes from setting up Cilium
 Run the following command to install Cilium 
 
 ```pwsh
-helm install cilium cilium/cilium --version 1.18.4 `
+helm install cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --set kubeProxyReplacement=true `
     --set k8sServiceHost=192.168.1.69 `
@@ -79,7 +79,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v
 Next Upgrade the Cilium install
 
 ```pwsh
-helm upgrade cilium cilium/cilium --version 1.18.4 `
+helm upgrade cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --reuse-values `
     --set gatewayAPI.enabled=true
@@ -128,7 +128,7 @@ kubectl -n kube-system rollout restart ds/cilium
 ### Setup Hubble
 
 ```pwsh
-helm upgrade cilium cilium/cilium --version 1.18.4 `
+helm upgrade cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --reuse-values `
     --set hubble.relay.enabled=true `
@@ -139,7 +139,7 @@ helm upgrade cilium cilium/cilium --version 1.18.4 `
 ### Setup L2 Announcements
 
 ```pwsh
-helm upgrade cilium cilium/cilium --version 1.18.4 `
+helm upgrade cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --reuse-values `
     --set l2announcements.enabled=true `
@@ -157,7 +157,7 @@ helm upgrade cilium cilium/cilium --version 1.18.4 `
    ```
 2. Enable Encryption in Cilium
    ```pwsh
-   helm upgrade cilium cilium/cilium --version 1.18.4 `
+   helm upgrade cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --reuse-values `
     --set encryption.enabled=true `
@@ -177,7 +177,7 @@ kubectl patch secret -n kube-system cilium-ipsec-keys -p="${data}" -v=1
 ### Observability Metrics
 
 ```pwsh
-helm upgrade cilium cilium/cilium --version 1.18.4 `
+helm upgrade cilium cilium/cilium --version 1.18.5 `
     --namespace kube-system `
     --reuse-values `
     --set prometheus.enabled=true `
@@ -192,7 +192,7 @@ helm upgrade cilium cilium/cilium --version 1.18.4 `
 #### Final Command
 
 ```pwsh
-helm install cilium cilium/cilium --version 1.18.4 `
+helm install cilium cilium/cilium --version 1.18.5 `
   --namespace kube-system `
   --set kubeProxyReplacement=true `
   --set k8sServiceHost=192.168.1.69 `
@@ -208,7 +208,7 @@ helm install cilium cilium/cilium --version 1.18.4 `
 ### Template
 
 ```pwsh
-helm template cilium cilium/cilium --version 1.18.4 `
+helm template cilium cilium/cilium --version 1.18.5 `
   --namespace kube-system `
   --set kubeProxyReplacement=true `
   --set gatewayAPI.enabled=true `

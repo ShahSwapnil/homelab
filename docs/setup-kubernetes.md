@@ -208,12 +208,19 @@ sudo systemctl enable --now kubelet
 
 ## Create Cluster
 
-1. Initialize Control Plane without Kube Proxy [^1]
+1. Rename the node appropriately.
+```bash
+sudo hostnamectl set-hostname nsc-k8s-cp-01
+sudo hostnamectl set-hostname nsc-k8s-wn-01
+sudo hostnamectl set-hostname nsc-k8s-wn-02
+```
+
+2. Initialize Control Plane without Kube Proxy [^1]
 
 ```bash
 sudo ufw allow 6443/tcp
 sudo ufw reload
-kubeadm init --skip-phases=addon/kube-proxy
+kubeadm init --skip-phases=addon/kube-proxy --config kubeadm-config.yaml
 ```
 
 2. Copy the kube config to host, Before you can copy the file. You need to copy and setup permissions
@@ -233,6 +240,12 @@ kubeadm init --skip-phases=addon/kube-proxy
    kubectl taint nodes worker-node-2 node.cilium.io/agent-not-ready:NoExecute
    ```
 7. Run `kubectl get nodes` to display all the nodes
+8. Add `cluster` label to all the nodes
+    ```bash
+    kubectl label nodes nsc-k8s-cp-01 cluster=nsc-k8s-dev
+    kubectl label nodes nsc-k8s-wn-01 cluster=nsc-k8s-dev
+    kubectl label nodes nsc-k8s-wn-02 cluster=nsc-k8s-dev
+    ```
 
 ## Additional Tools
 

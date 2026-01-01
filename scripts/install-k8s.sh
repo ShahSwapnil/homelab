@@ -26,3 +26,9 @@ apt-mark hold kubelet kubeadm kubectl
 
 echo "start kubelet"
 systemctl enable --now kubelet
+
+cat <<EOF > kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+clusterName: "nsc-k8s-dev"
+EOF

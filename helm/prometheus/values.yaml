@@ -859,22 +859,22 @@ prometheus:
   # adds additional scrape configs to prometheus.yml
   # must be a string so you have to add a | after extraScrapeConfigs:
   # example adds prometheus-blackbox-exporter scrape config
-  extraScrapeConfigs: |
-      - job_name: 'global_label_injector'
-        # This uses Prometheus itself as a target, just to ensure
-        # the configuration is valid and applies to at least one job.
-        # It's a common trick to inject global relabeling rules.
-        scrape_interval: 1h
-        static_configs:
-          - targets: ['localhost:9090']
+  extraScrapeConfigs: ""
+      # - job_name: 'global_label_injector'
+      #   # This uses Prometheus itself as a target, just to ensure
+      #   # the configuration is valid and applies to at least one job.
+      #   # It's a common trick to inject global relabeling rules.
+      #   scrape_interval: 1h
+      #   static_configs:
+      #     - targets: ['localhost:9090']
 
-        # The key is the metric_relabel_configs section
-        # This rule will be applied to every metric scraped by this job.
-        metric_relabel_configs:
-          - source_labels: [] # Match all metrics (no input labels needed)
-            target_label: cluster # The name of your new label
-            replacement: nsck8sdev # The value of your new label
-            action: replace
+      #   # The key is the metric_relabel_configs section
+      #   # This rule will be applied to every metric scraped by this job.
+      #   metric_relabel_configs:
+      #     - source_labels: [] # Match all metrics (no input labels needed)
+      #       target_label: cluster # The name of your new label
+      #       replacement: nsck8sdev # The value of your new label
+      #       action: replace
     # - job_name: 'prometheus-blackbox-exporter'
     #   metrics_path: /probe
     #   params:
@@ -968,7 +968,11 @@ prometheus:
   kube-state-metrics:
     ## If false, kube-state-metrics sub-chart will not be installed
     ##
-    enabled: false
+    enabled: true
+    # customLabels:
+    #   cluster: nsc-k8s-dev
+    metricLabelsAllowlist:
+      - nodes=[*]
 
   ## prometheus-node-exporter sub-chart configurable values
   ## Please see https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
@@ -976,7 +980,7 @@ prometheus:
   prometheus-node-exporter:
     ## If false, node-exporter will not be installed
     ##
-    enabled: false
+    enabled: true
 
     rbac:
       pspEnabled: false
