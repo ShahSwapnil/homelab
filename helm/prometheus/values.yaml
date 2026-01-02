@@ -968,7 +968,7 @@ prometheus:
   kube-state-metrics:
     ## If false, kube-state-metrics sub-chart will not be installed
     ##
-    enabled: true
+    enabled: false
     # customLabels:
     #   cluster: nsc-k8s-dev
     metricLabelsAllowlist:
@@ -980,7 +980,7 @@ prometheus:
   prometheus-node-exporter:
     ## If false, node-exporter will not be installed
     ##
-    enabled: true
+    enabled: false
 
     rbac:
       pspEnabled: false
