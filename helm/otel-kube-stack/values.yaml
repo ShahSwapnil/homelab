@@ -1,0 +1,14 @@
+opentelemetry-kube-stack:
+  crds:
+    installPrometheus: false
+
+  collectors:
+    daemon:
+      enabled: false  
+
+  kubeStateMetrics:
+    enabled: true
+
+  kube-state-metrics:
+    metricLabelsAllowlist:
+      - nodes=[*]
