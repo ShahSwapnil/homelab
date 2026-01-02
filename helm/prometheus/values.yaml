@@ -2,6 +2,7 @@
 # Default values for prometheus.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
 prometheus:
   rbac:
     create: true
@@ -47,7 +48,7 @@ prometheus:
     prometheus:
       ## If false, the configmap-reload container will not be deployed
       ##
-      enabled: false
+      enabled: true
 
       ## configmap-reload container name
       ##
@@ -57,7 +58,7 @@ prometheus:
       ##
       image:
         repository: quay.io/prometheus-operator/prometheus-config-reloader
-        tag: v0.87.0
+        tag: v0.87.1
         # When digest is set to a non-empty value, images will be pulled by digest (regardless of tag value).
         digest: ""
         pullPolicy: IfNotPresent
@@ -132,26 +133,29 @@ prometheus:
     ## If set it will override serviceAccounts.server.automountServiceAccountToken value for ServiceAccount.
     # automountServiceAccountToken: false
 
-    ## Use a ClusterRole (and ClusterRoleBinding)
-    ## - If set to false - we define a RoleBinding in the defined namespaces ONLY
-    ##
-    ## NB: because we need a Role with nonResourceURL's ("/metrics") - you must get someone with Cluster-admin privileges to define this role for you, before running with this setting enabled.
-    ##     This makes prometheus work - for users who do not have ClusterAdmin privs, but wants prometheus to operate on their own namespaces, instead of clusterwide.
-    ##
-    ## You MUST also set namespaces to the ones you have access to and want monitored by Prometheus.
-    ##
-    # useExistingClusterRoleName: prometheus-server
-
     ## If set it will override prometheus.server.fullname value for ClusterRole and ClusterRoleBinding
     ##
     clusterRoleNameOverride: ""
 
-    # Enable only the release namespace for monitoring. By default all namespaces are monitored.
-    # If releaseNamespace and namespaces are both set a merged list will be monitored.
+    ## Name of an existing cluster role to use in a role binding in namespaces set in
+    ## namespaces and releaseNamespace for namespaced discovery.
+    ##
+    useExistingClusterRoleName: ""
+
+    ## releaseNamespace to enable only the release namespace for service discovery.
+    ## By default all namespaces are included in service discovery.
+    ## If releaseNamespace and namespaces are both set, a merged list will be created.
+    ## Note that kubernetes_sd_configs.namespaces in scrape configs must be specified
+    ## if namespaced service discovery is desired. Setting useExistingClusterRoleName is required.
+    ##
     releaseNamespace: false
 
-    ## namespaces to monitor (instead of monitoring all - clusterwide). Needed if you want to run without Cluster-admin privileges.
-    # namespaces: 
+    ## namespaces to include in service discovery instead of clusterwide discovery. Needed if you want to run
+    ## Prometheus without cluster-admin privileges (namespaced configuration). See also releaseNamespace.
+    ## Setting useExistingClusterRoleName is required.
+    ##
+    namespaces: 
+      - Random
 
     # sidecarContainers - add more containers to prometheus server
     # Key/Value where Key is the sidecar `- name: <Key>`
@@ -417,7 +421,7 @@ prometheus:
 
       path: /
 
-      # pathType is only for k8s >= 1.18
+      # pathType determines the interpretation of the path matching
       pathType: Prefix
 
       ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services. (passed through tpl)
@@ -782,6 +786,7 @@ prometheus:
 
       loadBalancerIP: ""
       loadBalancerSourceRanges: []
+      loadBalancerClass: ""
       servicePort: 80
       sessionAffinity: None
       type: ClusterIP
@@ -820,6 +825,310 @@ prometheus:
     ##
     retentionSize: ""
 
+  ## scrapeConfigs (map) defines Prometheus' default scrape_configs.
+  ## Each can be disabled by setting "enabled" to "false" or leaving it empty. The key sets the default "job_name".
+  ## Further scrapeConfigs can be added as new keys, these are then enabled by default.
+  ## ref. https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config
+  scrapeConfigs:
+    prometheus:
+      enabled: false
+      job_name: ""
+      static_configs:
+        - targets:
+            - localhost:9090
+    kubernetes-api-servers:
+      enabled: false
+      job_name: ""
+      kubernetes_sd_configs:
+        - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+        - source_labels:
+          - __meta_kubernetes_namespace
+          - __meta_kubernetes_service_name
+          - __meta_kubernetes_endpoint_port_name
+          action: keep
+          regex: default;kubernetes;https
+    kubernetes-nodes:
+      enabled: false
+      job_name: ""
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+        - role: node
+      relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - target_label: __address__
+          replacement: kubernetes.default.svc:443
+        - source_labels: [__meta_kubernetes_node_name]
+          regex: (.+)
+          target_label: __metrics_path__
+          replacement: /api/v1/nodes/$1/proxy/metrics
+    kubernetes-nodes-cadvisor:
+      enabled: false
+      job_name: ""
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+        - role: node
+      relabel_configs:
+        - action: labelmap
+          regex: __meta_kubernetes_node_label_(.+)
+        - target_label: __address__
+          replacement: kubernetes.default.svc:443
+        - source_labels: [__meta_kubernetes_node_name]
+          regex: (.+)
+          target_label: __metrics_path__
+          replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+    kubernetes-service-endpoints:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      kubernetes_sd_configs:
+        - role: endpoints
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_slow]
+          action: drop
+          regex: true
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+          action: replace
+          target_label: __scheme__
+          regex: (https?)
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels:
+          - __address__
+          - __meta_kubernetes_service_annotation_prometheus_io_port
+          action: replace
+          target_label: __address__
+          regex: (.+?)(?::\d+)?;(\d+)
+          replacement: $1:$2
+        - action: labelmap
+          regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+          replacement: __param_$1
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          action: replace
+          target_label: service
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          action: replace
+          target_label: node
+    kubernetes-service-endpoints-slow:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      scrape_interval: 5m
+      scrape_timeout: 30s
+      kubernetes_sd_configs:
+        - role: endpoints
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_slow]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+          action: replace
+          target_label: __scheme__
+          regex: (https?)
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels:
+          - __address__
+          - __meta_kubernetes_service_annotation_prometheus_io_port
+          action: replace
+          target_label: __address__
+          regex: (.+?)(?::\d+)?;(\d+)
+          replacement: $1:$2
+        - action: labelmap
+          regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+          replacement: __param_$1
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          action: replace
+          target_label: service
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          action: replace
+          target_label: node
+    prometheus-pushgateway:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      kubernetes_sd_configs:
+        - role: service
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+          action: keep
+          regex: pushgateway
+    kubernetes-services:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      metrics_path: /probe
+      params:
+        module: [http_2xx]
+      kubernetes_sd_configs:
+        - role: service
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+          action: keep
+          regex: true
+        - source_labels: [__address__]
+          target_label: __param_target
+        - target_label: __address__
+          replacement: blackbox
+        - source_labels: [__param_target]
+          target_label: instance
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_service_name]
+          target_label: service
+    kubernetes-pods:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      kubernetes_sd_configs:
+        - role: pod
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+          action: drop
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+          action: replace
+          regex: (https?)
+          target_label: __scheme__
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          - __meta_kubernetes_pod_ip
+          action: replace
+          regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+          replacement: '[$2]:$1'
+          target_label: __address__
+        - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          - __meta_kubernetes_pod_ip
+          action: replace
+          regex: (\d+);((([0-9]+?)(\.|$)){4})
+          replacement: $2:$1
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+          replacement: __param_$1
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_phase]
+          regex: Pending|Succeeded|Failed|Completed
+          action: drop
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          action: replace
+          target_label: node
+    kubernetes-pods-slow:
+      enabled: false
+      job_name: ""
+      honor_labels: true
+      scrape_interval: 5m
+      scrape_timeout: 30s
+      kubernetes_sd_configs:
+        - role: pod
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+          action: replace
+          regex: (https?)
+          target_label: __scheme__
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          - __meta_kubernetes_pod_ip
+          action: replace
+          regex: (\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})
+          replacement: '[$2]:$1'
+          target_label: __address__
+        - source_labels:
+          - __meta_kubernetes_pod_annotation_prometheus_io_port
+          - __meta_kubernetes_pod_ip
+          action: replace
+          regex: (\d+);((([0-9]+?)(\.|$)){4})
+          replacement: $2:$1
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_annotation_prometheus_io_param_(.+)
+          replacement: __param_$1
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: pod
+        - source_labels: [__meta_kubernetes_pod_phase]
+          regex: Pending|Succeeded|Failed|Completed
+          action: drop
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          action: replace
+          target_label: node
+
+  # extraScrapeConfigs adds additional scrape configs to prometheus.yml
+  # must be a string so you have to add a | after extraScrapeConfigs:
+  # example adds prometheus-blackbox-exporter scrape config
+  extraScrapeConfigs: ""
+    # - job_name: 'prometheus-blackbox-exporter'
+    #   metrics_path: /probe
+    #   params:
+    #     module: [http_2xx]
+    #   static_configs:
+    #     - targets:
+    #       - https://example.com
+    #   relabel_configs:
+    #     - source_labels: [__address__]
+    #       target_label: __param_target
+    #     - source_labels: [__param_target]
+    #       target_label: instance
+    #     - target_label: __address__
+    #       replacement: prometheus-blackbox-exporter:9115
+
   ## Prometheus server ConfigMap entries for rule files (allow prometheus labels interpolation)
   ruleFiles: {}
 
@@ -854,41 +1163,13 @@ prometheus:
     ## DEPRECATED DEFAULT VALUE, unless explicitly naming your files, please use recording_rules.yml
     rules: {}
 
-    prometheus.yml: {}
-
-  # adds additional scrape configs to prometheus.yml
-  # must be a string so you have to add a | after extraScrapeConfigs:
-  # example adds prometheus-blackbox-exporter scrape config
-  extraScrapeConfigs: ""
-      # - job_name: 'global_label_injector'
-      #   # This uses Prometheus itself as a target, just to ensure
-      #   # the configuration is valid and applies to at least one job.
-      #   # It's a common trick to inject global relabeling rules.
-      #   scrape_interval: 1h
-      #   static_configs:
-      #     - targets: ['localhost:9090']
-
-      #   # The key is the metric_relabel_configs section
-      #   # This rule will be applied to every metric scraped by this job.
-      #   metric_relabel_configs:
-      #     - source_labels: [] # Match all metrics (no input labels needed)
-      #       target_label: cluster # The name of your new label
-      #       replacement: nsck8sdev # The value of your new label
-      #       action: replace
-    # - job_name: 'prometheus-blackbox-exporter'
-    #   metrics_path: /probe
-    #   params:
-    #     module: [http_2xx]
-    #   static_configs:
-    #     - targets:
-    #       - https://example.com
-    #   relabel_configs:
-    #     - source_labels: [__address__]
-    #       target_label: __param_target
-    #     - source_labels: [__param_target]
-    #       target_label: instance
-    #     - target_label: __address__
-    #       replacement: prometheus-blackbox-exporter:9115
+    prometheus.yml:
+      rule_files:
+        - /etc/config/recording_rules.yml
+        - /etc/config/alerting_rules.yml
+        ## Below two files are DEPRECATED will be removed from this default values file
+        - /etc/config/rules
+        - /etc/config/alerts
 
   # Adds option to add alert_relabel_configs to avoid duplicate alerts in alertmanager
   # useful in H/A prometheus with different external labels but the same alerts
@@ -969,10 +1250,6 @@ prometheus:
     ## If false, kube-state-metrics sub-chart will not be installed
     ##
     enabled: false
-    # customLabels:
-    #   cluster: nsc-k8s-dev
-    metricLabelsAllowlist:
-      - nodes=[*]
 
   ## prometheus-node-exporter sub-chart configurable values
   ## Please see https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-node-exporter
@@ -999,4 +1276,3 @@ prometheus:
     # Optional service annotations
     serviceAnnotations:
       prometheus.io/probe: pushgateway
-
