@@ -57,7 +57,7 @@
         {
             "label": "Render Helm Chart",
             "type": "shell",
-            "command": "helm template ${input:HelmChartPicker} . --output-dir rendered",
+            "command": "helm template ${input:HelmChartPicker} . -n ${input:ChartNamespace} --output-dir rendered",
             "options": {
                 "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
             },
