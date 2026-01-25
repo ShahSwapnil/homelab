@@ -149,7 +149,7 @@ persistence:
       storageClass: ""
       subPath: ""
       accessMode: ReadWriteOnce
-      size: 5Gi
+      size: 15Gi
       annotations: {}
     jobservice:
       jobLog:
@@ -195,7 +195,7 @@ persistence:
     # Refer to
     # https://github.com/distribution/distribution/blob/release/2.8/docs/configuration.md#redirect
     # for the detail.
-    disableredirect: false
+    disableredirect: true
     # Specify the "caBundleSecretName" if the storage service uses a self-signed certificate.
     # The secret must contain keys named "ca.crt" which will be injected into the trust store
     # of registry's containers.
@@ -204,7 +204,7 @@ persistence:
     # Specify the type of storage: "filesystem", "azure", "gcs", "s3", "swift",
     # "oss" and fill the information needed in the corresponding section. The type
     # must be "filesystem" if you want to use persistent volumes for registry
-    type: filesystem
+    type: s3
     filesystem:
       rootdirectory: /storage
       #maxthreads: 100
@@ -227,12 +227,10 @@ persistence:
     s3:
       # Set an existing secret for S3 accesskey and secretkey
       # keys in the secret should be REGISTRY_STORAGE_S3_ACCESSKEY and REGISTRY_STORAGE_S3_SECRETKEY for registry
-      #existingSecret: ""
+      existingSecret: "minio-harbor-creds"
       region: us-west-1
-      bucket: bucketname
-      #accesskey: awsaccesskey
-      #secretkey: awssecretkey
-      #regionendpoint: http://myobjects.local
+      bucket: "harbor"
+      regionendpoint: "http://loki-minio-svc.monitoring.svc.cluster.local:9000"
       #encrypt: false
       #keyid: mykeyid
       #secure: true

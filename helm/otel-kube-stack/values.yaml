@@ -60,6 +60,11 @@ opentelemetry-kube-stack:
                 static_configs:
                 - targets: [ '0.0.0.0:8888' ] 
         processors:
+          resource/set_service_name:
+              attributes:
+                - key: service.name
+                  value: "integrations/kubernetes/eventhandler"
+                  action: insert
           resourcedetection/env:
             detectors: [env, k8snode]
             timeout: 2s
@@ -73,7 +78,11 @@ opentelemetry-kube-stack:
             send_batch_size: 1000
             timeout: 1s
             send_batch_max_size: 1500
-        exporters:        
+        exporters:  
+          otlphttp/logs:
+            endpoint: http://loki-gateway.monitoring.svc.cluster.local:80/otlp
+            tls:
+              insecure: true        
           otlphttp/metrics:
             endpoint: http://prometheus-server.monitoring.svc.cluster.local:80/api/v1/otlp
             tls:
@@ -89,6 +98,15 @@ opentelemetry-kube-stack:
               - batch
               exporters:
               - otlphttp/metrics
+            logs:
+              receivers:
+              processors:
+              - resource/set_service_name
+              - resourcedetection/env
+              - resource/hostname
+              - batch
+              exporters:
+              - otlphttp/logs              
     daemon-nscubed:
       suffix: daemon
       mode: daemonset
