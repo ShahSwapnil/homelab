@@ -36,3 +36,11 @@ metadata:
 ```
 
 This will have the cert manager create and manage the certificate for the that gateway. 
+
+when issuerRef is required, use the values below. 
+
+```yaml
+      issuerRef:
+        kind: ClusterIssuer
+        name: nscubed-cluster-issuer
+```

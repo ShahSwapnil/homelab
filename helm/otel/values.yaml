@@ -29,10 +29,10 @@ opentelemetry-kube-stack:
     enabled: true
 
   kubeStateMetrics:
-    enabled: true
+    enabled: false
 
   nodeExporter:
-    enabled: true
+    enabled: false
 
   defaultCRConfig:
     config:
@@ -64,8 +64,8 @@ opentelemetry-kube-stack:
           enabled: true    
         kubernetesAttributes:
           enabled: true
-          # extractAllPodLabels: true
-          # extractAllPodAnnotations: true
+          extractAllPodLabels: true
+          extractAllPodAnnotations: true
         hostMetrics:
           enabled: true
         kubeletMetrics:
@@ -84,7 +84,7 @@ opentelemetry-kube-stack:
           resource/clustername:
             attributes:
               - key: k8s.cluster.name
-                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                value: "nsc-k8s-dev" # <-- SET YOUR CLUSTER NAME HERE
                 action: upsert  
           resource/hostname:
             attributes:
@@ -123,20 +123,19 @@ opentelemetry-kube-stack:
               exporters:
                 #- debug
                 - otlphttp/logs
-            metrics:
-              receivers:
-                - hostmetrics
-                - prometheus
-              processors:
-                - k8sattributes
-                - resourcedetection/env
-                - resource/hostname
-                - resource/clustername
-                # - metricstransform/nodeinfo
-                - batch
-              exporters:
-                - debug
-                - otlphttp/metrics
+            # metrics:
+            #   receivers:
+            #     - hostmetrics
+            #     - prometheus
+            #   processors:
+            #     - k8sattributes
+            #     - resourcedetection/env
+            #     - resource/hostname
+            #     - resource/clustername
+            #     - batch
+            #   exporters:
+            #     - debug
+            #     - otlphttp/metrics
     otel-daemon-cp:
       enabled: true
       fullnameOverride: otel-daemon-cp
@@ -154,8 +153,8 @@ opentelemetry-kube-stack:
           enabled: true    
         kubernetesAttributes:
           enabled: true
-          # extractAllPodLabels: true
-          # extractAllPodAnnotations: true
+          extractAllPodLabels: true
+          extractAllPodAnnotations: true
         hostMetrics:
           enabled: true
         kubeletMetrics:
@@ -174,7 +173,7 @@ opentelemetry-kube-stack:
           resource/clustername:
             attributes:
               - key: k8s.cluster.name
-                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                value: "nsc-k8s-dev" # <-- SET YOUR CLUSTER NAME HERE
                 action: upsert  
           resource/hostname:
             attributes:
@@ -213,20 +212,19 @@ opentelemetry-kube-stack:
               exporters:
                 #- debug
                 - otlphttp/logs
-            metrics:
-              receivers:
-                - hostmetrics
-                - prometheus
-              processors:
-                - k8sattributes
-                - resourcedetection/env
-                - resource/hostname
-                - resource/clustername
-                # - metricstransform/nodeinfo
-                - batch
-              exporters:
-                - debug
-                - otlphttp/metrics                
+            # metrics:
+            #   receivers:
+            #     - hostmetrics
+            #     - prometheus
+            #   processors:
+            #     - k8sattributes
+            #     - resourcedetection/env
+            #     - resource/hostname
+            #     - resource/clustername
+            #     - batch
+            #   exporters:
+            #     - debug
+            #     - otlphttp/metrics                
     deployment:
       enabled: true
       fullnameOverride : otel-cluster-deployment
@@ -239,8 +237,8 @@ opentelemetry-kube-stack:
           enabled: true
         kubernetesAttributes:
           enabled: true
-          # extractAllPodLabels: true
-          # extractAllPodAnnotations: true
+          extractAllPodLabels: true
+          extractAllPodAnnotations: true
         kubeletMetrics:
           enabled: true
       resources:
@@ -266,7 +264,7 @@ opentelemetry-kube-stack:
           resource/clustername:
             attributes:
               - key: k8s.cluster.name
-                value: "nscdevk8s" # <-- SET YOUR CLUSTER NAME HERE
+                value: "nsc-k8s-dev" # <-- SET YOUR CLUSTER NAME HERE
                 action: upsert              
           resource/hostname:
             attributes:
@@ -308,20 +306,19 @@ opentelemetry-kube-stack:
               exporters:
                 #- debug
                 - otlphttp/logs
-            metrics:
-              receivers:
-                - prometheus
-                - k8s_cluster
-              processors:
-                - k8sattributes
-                - resourcedetection/env
-                - resource/hostname
-                - resource/clustername
-                # - metricstransform/nodeinfo
-                - batch
-              exporters:
-                - debug
-                - otlphttp/metrics
+            # metrics:
+            #   receivers:
+            #     - prometheus
+            #     - k8s_cluster
+            #   processors:
+            #     - k8sattributes
+            #     - resourcedetection/env
+            #     - resource/hostname
+            #     - resource/clustername
+            #     - batch
+            #   exporters:
+            #     - debug
+            #     - otlphttp/metrics
 
 
 

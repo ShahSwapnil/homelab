@@ -1,0 +1,101 @@
+﻿{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Refresh Helm Chart List",
+            "type": "shell",
+            "command": "powershell -ExecutionPolicy Bypass -File .vscode/Update-HelmChartSelectorList.ps1",
+            "problemMatcher": []
+        },
+        {
+            "label": "Delete Rendered Helm Chart",
+            "type": "shell",
+            "command": "if (Test-Path \u0027./rendered\u0027) { Remove-Item -Path \u0027./rendered\u0027 -Recurse -Force }",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            }
+        },
+        {
+            "label": "Update Helm Dependencies",
+            "type": "shell",
+            "command": "helm dependency build",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            }
+        },
+        {
+            "label": "Install Helm Chart",
+            "type": "shell",
+            "command": "helm install ${input:HelmChartPicker} . -n ${input:ChartNamespace}",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": ["Render Helm Chart"]
+        },
+        {
+            "label": "Upgrade Helm Chart",
+            "type": "shell",
+            "command": "helm upgrade ${input:HelmChartPicker} . -n ${input:ChartNamespace}",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": ["Render Helm Chart"]
+        },
+        {
+            "label": "Uninstall Helm Chart",
+            "type": "shell",
+            "command": "helm uninstall ${input:HelmChartPicker} -n ${input:ChartNamespace}",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Render Helm Chart",
+            "type": "shell",
+            "command": "helm template ${input:HelmChartPicker} . -n ${input:ChartNamespace} --output-dir rendered",
+            "options": {
+                "cwd": "${workspaceFolder}/helm/${input:HelmChartPicker}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Refresh Helm Chart List",
+                "Delete Rendered Helm Chart",
+                "Update Helm Dependencies"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "HelmChartPicker",
+            "type": "pickString",
+            "description": "Select a Helm Chart",
+            "options": [
+                "cert-manager",
+                "cilium",
+                "development",
+                "dnsutils",
+                "grafana",
+                "harbor",
+                "loki",
+                "longhorn",
+                "otel",
+                "otel-kube-stack",
+                "prometheus",
+                "prometheus-crds",
+                "target-allocator",
+                "tempo"
+            ]
+        },
+        {
+            "id": "ChartNamespace",
+            "type": "promptString",
+            "description": "Enter Chart Namespace"
+        }
+    ]
+}
